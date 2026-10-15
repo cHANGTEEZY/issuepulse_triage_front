@@ -1,0 +1,279 @@
+import { Link } from "@tanstack/react-router";
+import CommandSearch from "@/components/_common/command-search";
+import PageHeader from "@/components/_common/page-header";
+import Button from "@/components/_ui/button";
+import { Input } from "@/components/_ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/_ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/_ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/_ui/tabs";
+import { isApiError } from "@/lib/apiClient";
+import {
+  TRIAGE_PRIORITIES,
+  TRIAGE_STATUSES,
+  type IssueRecord,
+  type TriageStatus,
+} from "@/api/issues";
+import { useIssueList } from "@/api/hooks/use-issues";
+import { useRepositories } from "@/api/hooks/use-repositories";
+import IssueBadges from "@/features/issues/components/issue-badges";
+import {
+  PRIORITY_LABEL,
+  STATUS_LABEL,
+  formatWhen,
+} from "@/features/issues/lib/triage";
+import {
+  type FeedPriority,
+  type FeedStatus,
+  type IssueFeedSearch,
+  toIssueFilters,
+} from "@/features/issues/lib/search";
+
+const STATUS_TABS: Array<{ value: FeedStatus; label: string }> = [
+  { value: "all", label: "All" },
+  ...TRIAGE_STATUSES.map((status) => ({
+    value: status,
+    label: STATUS_LABEL[status],
+  })),
+];
+
+type IssueFeedProps = {
+  search: IssueFeedSearch;
+  onSearchChange: (next: IssueFeedSearch) => void;
+};
+
+function errorMessage(error: unknown) {
+  if (isApiError(error)) return error.message;
+  return "Could not load issues.";
+}
+
+export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
+  const issues = useIssueList(toIssueFilters(search));
+  const repositories = useRepositories();
+  const rows = issues.data ?? [];
+
+  function patch(next: Partial<IssueFeedSearch>) {
+    onSearchChange({ ...search, ...next });
+  }
+
+  return (
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <PageHeader
+        title="Issues"
+        description="Triage GitHub issues without leaving your notes behind."
+        search={<CommandSearch placeholder="Search issues…" />}
+        actions={
+          <Button variant="secondary" size="md" href="/repositories">
+            Repositories
+          </Button>
+        }
+      >
+        <Tabs
+          value={search.status}
+          onValueChange={(status) => patch({ status: status as FeedStatus })}
+        >
+          <TabsList className="border-border overflow-x-auto border-b px-4">
+            {STATUS_TABS.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </PageHeader>
+
+      <div className="border-border flex flex-wrap items-center gap-2 border-b px-4 py-3">
+        <Input
+          value={search.q}
+          onChange={(event) => patch({ q: event.target.value })}
+          placeholder="Search title or body"
+          aria-label="Search issues"
+          className="max-w-[18em]"
+        />
+        <Select
+          value={search.repositoryId || "all"}
+          onValueChange={(repositoryId) =>
+            patch({ repositoryId: repositoryId === "all" ? "" : repositoryId })
+          }
+        >
+          <SelectTrigger className="w-[14em]" aria-label="Repository">
+            <SelectValue placeholder="All repositories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All repositories</SelectItem>
+            {(repositories.data ?? []).map((repository) => (
+              <SelectItem key={repository.id} value={repository.id}>
+                {repository.owner}/{repository.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={search.priority}
+          onValueChange={(priority) =>
+            patch({ priority: priority as FeedPriority })
+          }
+        >
+          <SelectTrigger className="w-[11em]" aria-label="Priority">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any priority</SelectItem>
+            <SelectItem value="elevated">Critical or high</SelectItem>
+            {TRIAGE_PRIORITIES.map((priority) => (
+              <SelectItem key={priority} value={priority}>
+                {PRIORITY_LABEL[priority]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant={search.stale ? "primary" : "secondary"}
+          size="md"
+          aria-pressed={search.stale}
+          onClick={() => patch({ stale: !search.stale })}
+        >
+          Stale
+        </Button>
+        <div className="ml-auto flex items-center gap-1">
+          <Button
+            variant={search.view === "table" ? "muted" : "ghost"}
+            size="md"
+            aria-pressed={search.view === "table"}
+            onClick={() => patch({ view: "table" })}
+          >
+            Table
+          </Button>
+          <Button
+            variant={search.view === "board" ? "muted" : "ghost"}
+            size="md"
+            aria-pressed={search.view === "board"}
+            onClick={() => patch({ view: "board" })}
+          >
+            Board
+          </Button>
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-auto">
+        {issues.isPending && (
+          <p className="text-subtle px-4 py-6">Loading issues…</p>
+        )}
+        {issues.isError && (
+          <p className="text-destructive px-4 py-6">{errorMessage(issues.error)}</p>
+        )}
+        {issues.isSuccess && rows.length === 0 && (
+          <p className="text-subtle px-4 py-6">
+            No issues match these filters. Connect a repository and sync it to
+            pull issues in.
+          </p>
+        )}
+        {issues.isSuccess && rows.length > 0 && search.view === "table" && (
+          <IssueTable rows={rows} />
+        )}
+        {issues.isSuccess && rows.length > 0 && search.view === "board" && (
+          <IssueBoard rows={rows} />
+        )}
+      </div>
+    </section>
+  );
+}
+
+function IssueTable({ rows }: { rows: IssueRecord[] }) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Issue</TableHead>
+          <TableHead>Repository</TableHead>
+          <TableHead>Triage</TableHead>
+          <TableHead>Updated</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((issue) => (
+          <TableRow key={issue.id}>
+            <TableCell className="max-w-[28em] whitespace-normal">
+              <Link
+                to="/issues/$issueId"
+                params={{ issueId: issue.id }}
+                className="font-medium underline-offset-2 hover:underline"
+              >
+                #{issue.number} {issue.title}
+              </Link>
+              <p className="caption-style text-subtle mt-1">
+                {issue.authorLogin} · {issue.state}
+              </p>
+            </TableCell>
+            <TableCell>
+              {issue.repository.owner}/{issue.repository.name}
+            </TableCell>
+            <TableCell className="whitespace-normal">
+              <IssueBadges issue={issue} />
+            </TableCell>
+            <TableCell>{formatWhen(issue.githubUpdatedAt)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+function IssueBoard({ rows }: { rows: IssueRecord[] }) {
+  return (
+    <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-5">
+      {TRIAGE_STATUSES.map((status) => (
+        <BoardColumn
+          key={status}
+          status={status}
+          rows={rows.filter((issue) => issue.triage.status === status)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function BoardColumn({
+  status,
+  rows,
+}: {
+  status: TriageStatus;
+  rows: IssueRecord[];
+}) {
+  return (
+    <section className="bg-secondary flex min-h-40 flex-col gap-2 rounded-xl p-2">
+      <h2 className="px-1 py-1">
+        {STATUS_LABEL[status]}{" "}
+        <span className="text-subtle font-normal">{rows.length}</span>
+      </h2>
+      {rows.map((issue) => (
+        <Link
+          key={issue.id}
+          to="/issues/$issueId"
+          params={{ issueId: issue.id }}
+          className="bg-background hover:bg-muted flex flex-col gap-2 rounded-lg p-3 transition-colors duration-150 ease-power3-out"
+        >
+          <span className="font-medium">
+            #{issue.number} {issue.title}
+          </span>
+          <span className="caption-style text-subtle">
+            {issue.repository.owner}/{issue.repository.name}
+          </span>
+          <IssueBadges issue={issue} />
+        </Link>
+      ))}
+    </section>
+  );
+}

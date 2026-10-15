@@ -1,0 +1,52 @@
+:root,
+:root[data-theme="dark"],
+:root[data-theme="light"],
+html.light {
+  --surface: var(--secondary);
+  --surface-raised: var(--card);
+  --surface-muted: var(--muted);
+  --text-secondary: var(--soft);
+  --text-muted: var(--subtle);
+  --border-subtle: var(--border);
+  --border-strong: var(--line-strong);
+  --focus-ring: var(--ring);
+  --radius-control: 9999px;
+  --radius-panel: 0.75rem;
+  --radius-surface: 0.75rem;
+  --control-height-sm: 30px;
+  --control-height-md: 36px;
+  --font-display: var(--font-geist);
+  --font-body: var(--font-geist);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+  animation: theme-reveal 480ms var(--ease-enter) both;
+}
+
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+
+  to {
+    clip-path: circle(var(--theme-r, 150vmax) at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
