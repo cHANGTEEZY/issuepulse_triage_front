@@ -6,10 +6,18 @@ import {
   type RowData,
 } from "@tanstack/react-table";
 
+export type DataTableColumnMeta = {
+  className?: string;
+  width?: number;
+  minWidth?: number;
+  maxWidth?: number;
+  resizable?: boolean;
+};
+
 export const dataTableFeatures = tableFeatures({
   rowPaginationFeature,
   paginatedRowModel: createPaginatedRowModel(),
-  columnMeta: {} as { className?: string },
+  columnMeta: {} as DataTableColumnMeta,
 });
 
 export type DataTableFeatures = typeof dataTableFeatures;

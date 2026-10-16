@@ -19,10 +19,12 @@ import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authRegisterRouteImport } from './routes/(auth)/register'
 import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppRepositoriesRouteImport } from './routes/_app/repositories'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as AppIssuesIssueIdRouteImport } from './routes/_app/issues/$issueId'
+import { Route as AppRepositoriesIndexRouteImport } from './routes/_app/repositories/index'
+import { Route as AppRepositoriesRepositoryIdRouteImport } from './routes/_app/repositories/$repositoryId'
 
 const authRouteRoute = authRouteRouteImport.update({
   id: '/(auth)',
@@ -72,9 +74,9 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppRepositoriesRoute = AppRepositoriesRouteImport.update({
-  id: '/repositories',
-  path: '/repositories',
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -92,6 +94,17 @@ const AppIssuesIssueIdRoute = AppIssuesIssueIdRouteImport.update({
   path: '/issues/$issueId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRepositoriesIndexRoute = AppRepositoriesIndexRouteImport.update({
+  id: '/repositories/',
+  path: '/repositories/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRepositoriesRepositoryIdRoute =
+  AppRepositoriesRepositoryIdRouteImport.update({
+    id: '/repositories/$repositoryId',
+    path: '/repositories/$repositoryId',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -102,10 +115,12 @@ export interface FileRoutesByFullPath {
   '/otp': typeof authOtpRoute
   '/register': typeof authRegisterRoute
   '/reset-password': typeof authResetPasswordRoute
-  '/repositories': typeof AppRepositoriesRoute
+  '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/users': typeof AppUsersRoute
   '/issues/$issueId': typeof AppIssuesIssueIdRoute
+  '/repositories/$repositoryId': typeof AppRepositoriesRepositoryIdRoute
+  '/repositories/': typeof AppRepositoriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/llms.txt': typeof LlmsDottxtRoute
@@ -115,11 +130,13 @@ export interface FileRoutesByTo {
   '/otp': typeof authOtpRoute
   '/register': typeof authRegisterRoute
   '/reset-password': typeof authResetPasswordRoute
-  '/repositories': typeof AppRepositoriesRoute
+  '/dashboard': typeof AppDashboardRoute
   '/settings': typeof AppSettingsRoute
   '/users': typeof AppUsersRoute
   '/': typeof AppIndexRoute
   '/issues/$issueId': typeof AppIssuesIssueIdRoute
+  '/repositories/$repositoryId': typeof AppRepositoriesRepositoryIdRoute
+  '/repositories': typeof AppRepositoriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,11 +149,13 @@ export interface FileRoutesById {
   '/(auth)/otp': typeof authOtpRoute
   '/(auth)/register': typeof authRegisterRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
-  '/_app/repositories': typeof AppRepositoriesRoute
+  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/': typeof AppIndexRoute
   '/_app/issues/$issueId': typeof AppIssuesIssueIdRoute
+  '/_app/repositories/$repositoryId': typeof AppRepositoriesRepositoryIdRoute
+  '/_app/repositories/': typeof AppRepositoriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -149,10 +168,12 @@ export interface FileRouteTypes {
     | '/otp'
     | '/register'
     | '/reset-password'
-    | '/repositories'
+    | '/dashboard'
     | '/settings'
     | '/users'
     | '/issues/$issueId'
+    | '/repositories/$repositoryId'
+    | '/repositories/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/llms.txt'
@@ -162,11 +183,13 @@ export interface FileRouteTypes {
     | '/otp'
     | '/register'
     | '/reset-password'
-    | '/repositories'
+    | '/dashboard'
     | '/settings'
     | '/users'
     | '/'
     | '/issues/$issueId'
+    | '/repositories/$repositoryId'
+    | '/repositories'
   id:
     | '__root__'
     | '/(auth)'
@@ -178,11 +201,13 @@ export interface FileRouteTypes {
     | '/(auth)/otp'
     | '/(auth)/register'
     | '/(auth)/reset-password'
-    | '/_app/repositories'
+    | '/_app/dashboard'
     | '/_app/settings'
     | '/_app/users'
     | '/_app/'
     | '/_app/issues/$issueId'
+    | '/_app/repositories/$repositoryId'
+    | '/_app/repositories/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -265,11 +290,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/repositories': {
-      id: '/_app/repositories'
-      path: '/repositories'
-      fullPath: '/repositories'
-      preLoaderRoute: typeof AppRepositoriesRouteImport
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings': {
@@ -291,6 +316,20 @@ declare module '@tanstack/react-router' {
       path: '/issues/$issueId'
       fullPath: '/issues/$issueId'
       preLoaderRoute: typeof AppIssuesIssueIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/repositories/': {
+      id: '/_app/repositories/'
+      path: '/repositories'
+      fullPath: '/repositories/'
+      preLoaderRoute: typeof AppRepositoriesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/repositories/$repositoryId': {
+      id: '/_app/repositories/$repositoryId'
+      path: '/repositories/$repositoryId'
+      fullPath: '/repositories/$repositoryId'
+      preLoaderRoute: typeof AppRepositoriesRepositoryIdRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -315,19 +354,23 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
-  AppRepositoriesRoute: typeof AppRepositoriesRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
   AppIssuesIssueIdRoute: typeof AppIssuesIssueIdRoute
+  AppRepositoriesRepositoryIdRoute: typeof AppRepositoriesRepositoryIdRoute
+  AppRepositoriesIndexRoute: typeof AppRepositoriesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppRepositoriesRoute: AppRepositoriesRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
   AppIssuesIssueIdRoute: AppIssuesIssueIdRoute,
+  AppRepositoriesRepositoryIdRoute: AppRepositoriesRepositoryIdRoute,
+  AppRepositoriesIndexRoute: AppRepositoriesIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

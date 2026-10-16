@@ -40,6 +40,7 @@ type ButtonProps = VariantProps<typeof buttonVariants> &
   ComponentProps<"button"> & {
     href?: ComponentProps<typeof Link>["to"];
     search?: Record<string, unknown>;
+    params?: Record<string, string>;
   };
 
 export default function Button({
@@ -48,6 +49,7 @@ export default function Button({
   className,
   href,
   search,
+  params,
   children,
   type = "button",
   ...props
@@ -59,8 +61,12 @@ export default function Button({
       <Link
         to={href}
         search={search as never}
+        params={params as never}
         className={classes}
-        {...(props as Omit<ComponentProps<typeof Link>, "to" | "search" | "className">)}
+        {...(props as Omit<
+          ComponentProps<typeof Link>,
+          "to" | "search" | "params" | "className"
+        >)}
       >
         {children}
       </Link>

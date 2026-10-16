@@ -13,6 +13,7 @@ type SidebarNavItemProps = {
   iconClassName?: string;
   href?: ComponentProps<typeof Button>["href"];
   search?: Record<string, unknown>;
+  params?: Record<string, string>;
 };
 
 export default function SidebarNavItem({
@@ -24,6 +25,7 @@ export default function SidebarNavItem({
   iconClassName,
   href,
   search,
+  params,
 }: SidebarNavItemProps) {
   const setSidebarOpen = useUiStore((state) => state.setSidebarOpen);
 
@@ -34,6 +36,7 @@ export default function SidebarNavItem({
         size="md"
         href={href}
         search={search}
+        params={params}
         data-active={active}
         aria-current={active ? "page" : undefined}
         onClick={() => {

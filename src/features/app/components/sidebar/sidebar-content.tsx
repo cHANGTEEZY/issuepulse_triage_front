@@ -6,9 +6,10 @@ import SidebarNavItem from "./sidebar-nav-item";
 import SidebarSection from "./sidebar-section";
 import SidebarUser from "./sidebar-user";
 import { useIssueSummary } from "@/api/hooks/use-issues";
-import { useRepositories } from "@/api/hooks/use-repositories";
+import { useRepositoryCatalog } from "@/api/hooks/use-repositories";
 import Logo from "@/public/assets/images/_common/logo.svg?react";
 import ListIcon from "@/public/assets/images/companies/sidebar/list.svg?react";
+import BarChartIcon from "@/public/assets/images/companies/sidebar/bar-chart.svg?react";
 import BookClosedIcon from "@/public/assets/images/companies/sidebar/book-closed.svg?react";
 import AlertTriangleIcon from "@/public/assets/images/companies/sidebar/alert-triangle.svg?react";
 import TargetIcon from "@/public/assets/images/companies/sidebar/target-05.svg?react";
@@ -20,8 +21,9 @@ export default function SidebarContent() {
     select: (state) => state.location.pathname,
   });
   const summary = useIssueSummary();
-  const repositories = useRepositories();
+  const repositories = useRepositoryCatalog();
   const counts = summary.data;
+  const recentRepositories = (repositories.data ?? []).slice(0, 8);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -40,6 +42,12 @@ export default function SidebarContent() {
       <ScrollArea className="min-h-0 flex-1">
         <nav aria-label="Primary" className="flex flex-col gap-1 pb-2">
           <SidebarSection>
+            <SidebarNavItem
+              icon={BarChartIcon}
+              label="Dashboard"
+              href="/dashboard"
+              active={pathname === "/dashboard"}
+            />
             <SidebarNavItem
               icon={ListIcon}
               label="Issues"
@@ -80,13 +88,14 @@ export default function SidebarContent() {
           </SidebarSection>
 
           <SidebarSection title="Repositories">
-            {(repositories.data ?? []).map((repository) => (
+            {recentRepositories.map((repository) => (
               <SidebarNavItem
                 key={repository.id}
                 icon={BookClosedIcon}
                 label={`${repository.owner}/${repository.name}`}
-                href="/"
-                search={{ repositoryId: repository.id, status: "inbox" }}
+                href="/repositories/$repositoryId"
+                params={{ repositoryId: repository.id }}
+                active={pathname === `/repositories/${repository.id}`}
               />
             ))}
             {(repositories.data ?? []).length === 0 && (

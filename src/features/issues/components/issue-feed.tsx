@@ -10,14 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/_ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/_ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/_ui/tabs";
 import { isApiError } from "@/lib/apiClient";
 import {
@@ -27,13 +19,10 @@ import {
   type TriageStatus,
 } from "@/api/issues";
 import { useIssueList } from "@/api/hooks/use-issues";
-import { useRepositories } from "@/api/hooks/use-repositories";
+import { useRepositoryCatalog } from "@/api/hooks/use-repositories";
 import IssueBadges from "@/features/issues/components/issue-badges";
-import {
-  PRIORITY_LABEL,
-  STATUS_LABEL,
-  formatWhen,
-} from "@/features/issues/lib/triage";
+import IssueTable from "@/features/issues/components/table/issue-table";
+import { PRIORITY_LABEL, STATUS_LABEL } from "@/features/issues/lib/triage";
 import {
   type FeedPriority,
   type FeedStatus,
@@ -61,7 +50,7 @@ function errorMessage(error: unknown) {
 
 export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
   const issues = useIssueList(toIssueFilters(search));
-  const repositories = useRepositories();
+  const repositories = useRepositoryCatalog();
   const rows = issues.data ?? [];
 
   function patch(next: Partial<IssueFeedSearch>) {
@@ -167,67 +156,25 @@ export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto">
-        {issues.isPending && (
-          <p className="text-subtle px-4 py-6">Loading issues…</p>
-        )}
-        {issues.isError && (
-          <p className="text-destructive px-4 py-6">{errorMessage(issues.error)}</p>
-        )}
-        {issues.isSuccess && rows.length === 0 && (
-          <p className="text-subtle px-4 py-6">
-            No issues match these filters. Connect a repository and sync it to
-            pull issues in.
-          </p>
-        )}
-        {issues.isSuccess && rows.length > 0 && search.view === "table" && (
-          <IssueTable rows={rows} />
-        )}
-        {issues.isSuccess && rows.length > 0 && search.view === "board" && (
+      {issues.isPending && (
+        <p className="text-subtle px-4 py-6">Loading issues…</p>
+      )}
+      {issues.isError && (
+        <p className="text-destructive px-4 py-6">{errorMessage(issues.error)}</p>
+      )}
+      {issues.isSuccess && search.view === "table" && <IssueTable rows={rows} />}
+      {issues.isSuccess && search.view === "board" && rows.length === 0 && (
+        <p className="text-subtle px-4 py-6">
+          No issues match these filters. Connect a repository and sync it to
+          pull issues in.
+        </p>
+      )}
+      {issues.isSuccess && search.view === "board" && rows.length > 0 && (
+        <div className="min-h-0 flex-1 overflow-auto">
           <IssueBoard rows={rows} />
-        )}
-      </div>
+        </div>
+      )}
     </section>
-  );
-}
-
-function IssueTable({ rows }: { rows: IssueRecord[] }) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Issue</TableHead>
-          <TableHead>Repository</TableHead>
-          <TableHead>Triage</TableHead>
-          <TableHead>Updated</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((issue) => (
-          <TableRow key={issue.id}>
-            <TableCell className="max-w-[28em] whitespace-normal">
-              <Link
-                to="/issues/$issueId"
-                params={{ issueId: issue.id }}
-                className="font-medium underline-offset-2 hover:underline"
-              >
-                #{issue.number} {issue.title}
-              </Link>
-              <p className="caption-style text-subtle mt-1">
-                {issue.authorLogin} · {issue.state}
-              </p>
-            </TableCell>
-            <TableCell>
-              {issue.repository.owner}/{issue.repository.name}
-            </TableCell>
-            <TableCell className="whitespace-normal">
-              <IssueBadges issue={issue} />
-            </TableCell>
-            <TableCell>{formatWhen(issue.githubUpdatedAt)}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
   );
 }
 

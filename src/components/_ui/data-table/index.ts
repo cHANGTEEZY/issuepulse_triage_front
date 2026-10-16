@@ -7,5 +7,6 @@ export {
 export {
   createDataTableColumnHelper,
   dataTableFeatures,
+  type DataTableColumnMeta,
   type DataTableFeatures,
 } from "./table-features";

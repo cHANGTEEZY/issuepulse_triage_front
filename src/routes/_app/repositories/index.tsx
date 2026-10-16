@@ -5,7 +5,7 @@ import { canonicalLink, headMeta } from "@/lib/seo";
 const TITLE = "Repositories";
 const DESCRIPTION = "Connect GitHub repositories and sync their issues.";
 
-export const Route = createFileRoute("/_app/repositories")({
+export const Route = createFileRoute("/_app/repositories/")({
   component: RepositoriesPage,
   head: () => ({
     meta: headMeta({

@@ -4,7 +4,49 @@ import { issueKeys } from "@/api/hooks/use-issues";
 
 export const repositoryKeys = {
   all: () => ["repositories"] as const,
+  overview: (id: string) => ["repositories", "overview", id] as const,
+  commits: (id: string) => ["repositories", "commits", id] as const,
+  contents: (id: string, path: string) =>
+    ["repositories", "contents", id, path] as const,
+  pulls: (id: string) => ["repositories", "pulls", id] as const,
 };
+
+export function useRepositoryOverview(id: string) {
+  return useQuery({
+    queryKey: repositoryKeys.overview(id),
+    queryFn: async () => (await repositoriesApi.overview(id)).data,
+    enabled: id.length > 0,
+    retry: false,
+  });
+}
+
+export function useRepositoryCommits(id: string) {
+  return useQuery({
+    queryKey: repositoryKeys.commits(id),
+    queryFn: async () => (await repositoriesApi.commits(id)).data,
+    enabled: id.length > 0,
+    retry: false,
+  });
+}
+
+export function useRepositoryContents(id: string, path: string) {
+  return useQuery({
+    queryKey: repositoryKeys.contents(id, path),
+    queryFn: async () => (await repositoriesApi.contents(id, path)).data,
+    enabled: id.length > 0,
+    retry: false,
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useRepositoryPulls(id: string) {
+  return useQuery({
+    queryKey: repositoryKeys.pulls(id),
+    queryFn: async () => (await repositoriesApi.pulls(id)).data,
+    enabled: id.length > 0,
+    retry: false,
+  });
+}
 
 export function useRepositories() {
   return useQuery({
@@ -29,4 +71,34 @@ export function useInstallUrl() {
   return useMutation({
     mutationFn: async () => (await repositoriesApi.installUrl()).data.url,
   });
+}
+
+export function useRepositoryRefresh() {
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: ["repositories", "refresh"] as const,
+    queryFn: async () => {
+      const data = (await repositoriesApi.refresh()).data;
+      queryClient.setQueryData(repositoryKeys.all(), data);
+      return data;
+    },
+    staleTime: 60_000,
+    retry: false,
+  });
+}
+
+export function useRepositoryCatalog() {
+  const list = useRepositories();
+  const refresh = useRepositoryRefresh();
+  const data = refresh.data ?? list.data;
+
+  return {
+    data,
+    error: list.error ?? refresh.error,
+    isPending: !data && (list.isPending || refresh.isPending),
+    isError: !data && list.isError && refresh.isError,
+    isRefreshing: refresh.isFetching,
+    refreshError: refresh.error,
+  };
 }

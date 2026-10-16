@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   useTable,
   type ColumnDef,
@@ -16,6 +22,17 @@ import {
   TableRow,
 } from "@/components/_ui/table";
 import DataTablePagination from "./data-table-pagination";
+import DataTableResizer from "./data-table-resizer";
+import {
+  clampColumnWidth,
+  columnBounds,
+  columnWidth,
+  gridTemplate,
+  isColumnResizable,
+  readStoredWidths,
+  writeStoredWidths,
+  type ColumnWidths,
+} from "./column-sizing";
 import { dataTableFeatures, type DataTableFeatures } from "./table-features";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +44,7 @@ type DataTableProps<TData extends RowData> = {
   data: TData[];
   getRowId: (row: TData) => string;
   renderRow: (row: Row<DataTableFeatures, TData>) => ReactNode;
+  tableId?: string;
   tableClassName?: string;
   rowClassName?: string;
   empty: ReactNode;
@@ -40,6 +58,7 @@ export default function DataTable<TData extends RowData>({
   data,
   getRowId,
   renderRow,
+  tableId,
   tableClassName,
   rowClassName,
   empty,
@@ -66,12 +85,40 @@ export default function DataTable<TData extends RowData>({
     (state) => ({ pagination: state.pagination }),
   );
 
+  const [widths, setWidths] = useState<ColumnWidths>({});
+
+  useEffect(() => {
+    if (!tableId) return;
+    setWidths(readStoredWidths(tableId));
+  }, [tableId]);
+
+  const commit = useCallback(() => {
+    if (!tableId) return;
+    setWidths((current) => {
+      writeStoredWidths(tableId, current);
+      return current;
+    });
+  }, [tableId]);
+
+  const leafColumns = table.getAllLeafColumns();
+  const template = gridTemplate(
+    leafColumns.map((column) => ({
+      id: column.id,
+      meta: column.columnDef.meta,
+    })),
+    widths,
+  );
+
   const rows = table.getRowModel().rows;
 
   return (
     <div className="border-border flex min-h-0 flex-1 flex-col border-t">
       <ScrollArea orientation="both" className="min-h-0 flex-1">
-        <Table role="table" className={cn("w-full", tableClassName)}>
+        <Table
+          role="table"
+          className={cn("w-full", tableClassName)}
+          style={template ? { gridTemplateColumns: template } : undefined}
+        >
           <TableHeader role="rowgroup" className="contents">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
@@ -79,20 +126,54 @@ export default function DataTable<TData extends RowData>({
                 role="row"
                 className={rowClassName}
               >
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    role="columnheader"
-                    className={cn(
-                      "flex items-center",
-                      header.column.columnDef.meta?.className,
-                    )}
-                  >
-                    {header.isPlaceholder ? null : (
-                      <table.FlexRender header={header} />
-                    )}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const meta = header.column.columnDef.meta;
+                  const width = columnWidth(meta, widths, header.column.id);
+                  const resizable = isColumnResizable(meta) && width != null;
+                  const bounds = columnBounds(meta);
+                  const label =
+                    typeof header.column.columnDef.header === "string"
+                      ? header.column.columnDef.header
+                      : header.column.id;
+
+                  return (
+                    <TableHead
+                      key={header.id}
+                      role="columnheader"
+                      className={cn(
+                        "relative flex min-w-0 items-center overflow-visible",
+                        meta?.className,
+                      )}
+                    >
+                      {header.isPlaceholder ? null : (
+                        <table.FlexRender header={header} />
+                      )}
+                      {resizable && (
+                        <DataTableResizer
+                          label={label}
+                          width={width}
+                          min={bounds.min}
+                          max={bounds.max}
+                          onResize={(next) =>
+                            setWidths((current) => ({
+                              ...current,
+                              [header.column.id]: clampColumnWidth(meta, next),
+                            }))
+                          }
+                          onCommit={commit}
+                          onReset={() => {
+                            setWidths((current) => {
+                              const next = { ...current };
+                              delete next[header.column.id];
+                              if (tableId) writeStoredWidths(tableId, next);
+                              return next;
+                            });
+                          }}
+                        />
+                      )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>

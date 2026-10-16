@@ -32,6 +32,13 @@ export const SITE_ROUTES: SiteRoute[] = [
     priority: 1,
   },
   {
+    path: "/dashboard",
+    title: "Dashboard",
+    description: "Backlog health across every connected repository.",
+    changeFrequency: "daily",
+    priority: 0.9,
+  },
+  {
     path: "/repositories",
     title: "Repositories",
     description: "Connect GitHub repositories and sync their issues.",
