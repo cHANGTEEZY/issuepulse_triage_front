@@ -11,6 +11,7 @@ import {
   useSyncRepository,
 } from "@/api/hooks/use-repositories";
 import PageHeader from "@/components/_common/page-header";
+import Button from "@/components/_ui/button";
 import { ActivityHeatmap } from "@/components/arc/activity-heatmap/activity-heatmap";
 import { BarChart } from "@/components/arc/bar-chart/bar-chart";
 import { ButtonGroup } from "@/components/arc/button-group/button-group";
@@ -32,6 +33,8 @@ import {
   type RangeValue,
 } from "@/features/dashboard/lib/metrics";
 import DashboardCard from "./dashboard-card";
+import BookClosedIcon from "@/public/assets/images/companies/sidebar/book-closed.svg?react";
+import ClipboardIcon from "@/public/assets/images/companies/sidebar/clipboard.svg?react";
 
 const FLOW_SERIES = [
   { key: "opened", label: "Opened", area: true },
@@ -181,13 +184,41 @@ export default function Dashboard() {
         </DashboardCard>
 
         {!issues.isPending && issueRows.length === 0 ? (
-          <DashboardCard title="Nothing to chart yet">
+          <DashboardCard>
             <EmptyState
-              title={connected ? "No issues synced" : "No repositories connected"}
+              icon={
+                connected ? (
+                  <ClipboardIcon className="size-6" />
+                ) : (
+                  <BookClosedIcon className="size-6" />
+                )
+              }
+              title={connected ? "No issues synced yet" : "No repositories connected"}
               description={
                 connected
-                  ? "Sync a repository to pull its issues in and the charts will fill up."
+                  ? "Sync a repository to pull its issues in and the charts above will fill up."
                   : "Install the GitHub App on a repository to start tracking its issues here."
+              }
+              action={
+                connected ? (
+                  <Button
+                    variant="primary"
+                    size="md"
+                    disabled={busy}
+                    onClick={() => void syncAll()}
+                  >
+                    {busy ? "Syncing…" : "Sync all repositories"}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="md"
+                    disabled={install.isPending}
+                    onClick={() => void connect()}
+                  >
+                    {install.isPending ? "Opening GitHub…" : "Connect repository"}
+                  </Button>
+                )
               }
             />
           </DashboardCard>

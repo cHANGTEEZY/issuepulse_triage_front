@@ -1,7 +1,9 @@
 import type { RepositoryPull } from "@/api/repositories";
 import Avatar from "@/components/_ui/avatar";
 import Tag from "@/components/_ui/tag";
+import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import { formatWhen } from "@/features/issues/lib/triage";
+import TargetIcon from "@/public/assets/images/companies/sidebar/target-05.svg?react";
 
 function pullState(pull: RepositoryPull) {
   if (pull.merged) return { label: "Merged", tone: "purple" as const };
@@ -12,7 +14,14 @@ function pullState(pull: RepositoryPull) {
 
 export default function PullsSection({ pulls }: { pulls: RepositoryPull[] }) {
   if (pulls.length === 0) {
-    return <p className="text-subtle py-4">No pull requests yet.</p>;
+    return (
+      <EmptyState
+        icon={<TargetIcon className="size-6" />}
+        className="max-w-[56em]"
+        title="No pull requests yet"
+        description="Open, draft, and merged pull requests for this repository will be listed here."
+      />
+    );
   }
 
   return (

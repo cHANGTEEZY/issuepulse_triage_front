@@ -54,6 +54,13 @@ export default function RepositoryDetail({
     <section className="flex min-h-0 min-w-0 flex-1 flex-col">
       <PageHeader
         title={title}
+        breadcrumb={
+          <>
+            <span>Repositories</span>
+            <span aria-hidden>/</span>
+            <span className="text-foreground truncate">{title}</span>
+          </>
+        }
         description={description}
         actions={
           <div className="flex items-center gap-2">

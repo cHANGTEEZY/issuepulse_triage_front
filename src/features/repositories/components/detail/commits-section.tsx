@@ -1,6 +1,8 @@
 import type { RepositoryCommit } from "@/api/repositories";
 import Avatar from "@/components/_ui/avatar";
+import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import { formatWhen } from "@/features/issues/lib/triage";
+import ClockIcon from "@/public/assets/images/companies/detail/clock.svg?react";
 
 function subject(message: string) {
   const [first = ""] = message.split("\n");
@@ -9,7 +11,14 @@ function subject(message: string) {
 
 export default function CommitsSection({ commits }: { commits: RepositoryCommit[] }) {
   if (commits.length === 0) {
-    return <p className="text-subtle py-4">No commits on the default branch yet.</p>;
+    return (
+      <EmptyState
+        icon={<ClockIcon className="size-6" />}
+        className="max-w-[56em]"
+        title="No commits yet"
+        description="Commits on the default branch will appear here once the repository has history to show."
+      />
+    );
   }
 
   return (

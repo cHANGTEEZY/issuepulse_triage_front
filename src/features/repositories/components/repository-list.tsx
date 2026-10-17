@@ -8,7 +8,10 @@ import {
   useRepositoryCatalog,
   useSyncRepository,
 } from "@/api/hooks/use-repositories";
+import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import RepositoryTable from "@/features/repositories/components/table/repository-table";
+import SearchIcon from "@/public/assets/images/_common/search.svg?react";
+import BookClosedIcon from "@/public/assets/images/companies/sidebar/book-closed.svg?react";
 
 function errorMessage(error: unknown, fallback: string) {
   if (isApiError(error)) return error.message;
@@ -93,15 +96,41 @@ export default function RepositoryList() {
         </p>
       )}
       {!repositories.isPending && !connected && (
-        <p className="text-subtle px-4 py-6">
-          No repositories yet. Connect the GitHub App to add one.
-        </p>
+        <div className="px-4">
+          <EmptyState
+            icon={<BookClosedIcon className="size-6" />}
+            title="No repositories yet"
+            description="Connect the GitHub App to a repository and it will show up here, ready to sync its issues."
+            action={
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => void connect()}
+                disabled={install.isPending}
+              >
+                {install.isPending ? "Opening GitHub…" : "Connect repository"}
+              </Button>
+            }
+          />
+        </div>
       )}
       {connected && (
         <RepositoryTable
           rows={visible}
           syncingId={sync.isPending && sync.variables ? sync.variables : null}
           onSync={(id) => sync.mutate(id)}
+          empty={
+            <EmptyState
+              icon={<SearchIcon className="size-6" />}
+              title={`No results for “${query.trim()}”`}
+              description="No connected repository matches that name. Try a shorter search."
+              action={
+                <Button variant="secondary" size="md" onClick={() => setQuery("")}>
+                  Clear search
+                </Button>
+              }
+            />
+          }
         />
       )}
     </section>

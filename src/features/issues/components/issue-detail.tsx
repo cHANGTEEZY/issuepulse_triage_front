@@ -17,7 +17,9 @@ import {
   type TriageStatus,
 } from "@/api/issues";
 import { useAssignees, useIssue, useUpdateTriage } from "@/api/hooks/use-issues";
+import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import IssueBadges from "@/features/issues/components/issue-badges";
+import AlertTriangleIcon from "@/public/assets/images/companies/sidebar/alert-triangle.svg?react";
 import MarkdownBody from "@/features/issues/components/markdown-body";
 import {
   PRIORITY_LABEL,
@@ -56,6 +58,15 @@ export default function IssueDetail({ issueId }: { issueId: string }) {
     <section className="flex min-h-0 min-w-0 flex-1 flex-col">
       <PageHeader
         title={issue.data ? `#${issue.data.number} ${issue.data.title}` : "Issue"}
+        breadcrumb={
+          <>
+            <span>Issues</span>
+            <span aria-hidden>/</span>
+            <span className="text-foreground truncate">
+              {issue.data ? `#${issue.data.number}` : "Detail"}
+            </span>
+          </>
+        }
         description={
           issue.data
             ? `${issue.data.repository.owner}/${issue.data.repository.name} · updated ${formatWhen(issue.data.githubUpdatedAt)}`
@@ -71,9 +82,20 @@ export default function IssueDetail({ issueId }: { issueId: string }) {
       <div className="min-h-0 flex-1 overflow-auto px-4 py-5">
         {issue.isPending && <p className="text-subtle">Loading issue…</p>}
         {issue.isError && (
-          <p className="text-destructive">
-            {isApiError(issue.error) ? issue.error.message : "Issue not found."}
-          </p>
+          <EmptyState
+            icon={<AlertTriangleIcon className="size-6" />}
+            title="Issue not found"
+            description={
+              isApiError(issue.error)
+                ? issue.error.message
+                : "This issue may have been removed, or the repository is no longer connected."
+            }
+            action={
+              <Button variant="primary" size="md" href="/">
+                Back to issues
+              </Button>
+            }
+          />
         )}
         {issue.data && (
           <div className="grid gap-8 lg:grid-cols-[minmax(0,42em)_20em]">

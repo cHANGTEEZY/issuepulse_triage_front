@@ -9,6 +9,7 @@ import MenuIcon from "@/public/assets/images/_common/menu.svg?react";
 type PageHeaderProps = {
   title: string;
   badge?: ReactNode;
+  breadcrumb?: ReactNode;
   description?: string;
   search?: ReactNode;
   actions?: ReactNode;
@@ -19,6 +20,7 @@ type PageHeaderProps = {
 export default function PageHeader({
   title,
   badge,
+  breadcrumb,
   description,
   search,
   actions,
@@ -30,12 +32,12 @@ export default function PageHeader({
   return (
     <header
       className={cn(
-        "shrink-0",
+        "bg-background/85 shrink-0 backdrop-blur-md",
         !children && "border-border border-b",
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-3 px-4 py-4">
+      <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-4">
         <div className="flex min-w-0 items-center gap-2.5">
           <Button
             variant="secondary"
@@ -47,6 +49,14 @@ export default function PageHeader({
             <MenuIcon aria-hidden className="size-3.5" />
           </Button>
           <div className="min-w-0">
+            {breadcrumb && (
+              <nav
+                aria-label="Breadcrumb"
+                className="caption-style text-subtle mb-1.5 flex min-w-0 items-center gap-1.5 truncate"
+              >
+                {breadcrumb}
+              </nav>
+            )}
             <div className="flex min-w-0 items-center gap-2">
               <h1 className="truncate">{title}</h1>
               {badge}
@@ -60,7 +70,7 @@ export default function PageHeader({
         </div>
 
         {(search || actions) && (
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
             {search}
             {actions}
           </div>

@@ -183,7 +183,7 @@ export default function DataTable<TData extends RowData>({
               <TableRow role="row" className={rowClassName}>
                 <td
                   role="cell"
-                  className="caption-style text-muted-foreground col-span-full flex h-[120px] items-center justify-center"
+                  className="col-span-full flex items-center justify-center px-4"
                 >
                   {empty}
                 </td>

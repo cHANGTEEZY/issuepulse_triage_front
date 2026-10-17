@@ -22,7 +22,11 @@ import { useIssueList } from "@/api/hooks/use-issues";
 import { useRepositoryCatalog } from "@/api/hooks/use-repositories";
 import IssueBadges from "@/features/issues/components/issue-badges";
 import IssueTable from "@/features/issues/components/table/issue-table";
+import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import { PRIORITY_LABEL, STATUS_LABEL } from "@/features/issues/lib/triage";
+import SearchIcon from "@/public/assets/images/_common/search.svg?react";
+import BookClosedIcon from "@/public/assets/images/companies/sidebar/book-closed.svg?react";
+import ClipboardIcon from "@/public/assets/images/companies/sidebar/clipboard.svg?react";
 import {
   type FeedPriority,
   type FeedStatus,
@@ -52,10 +56,56 @@ export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
   const issues = useIssueList(toIssueFilters(search));
   const repositories = useRepositoryCatalog();
   const rows = issues.data ?? [];
+  const connected = (repositories.data ?? []).length > 0;
+  const hasFilters =
+    search.q.trim().length > 0 ||
+    search.repositoryId.length > 0 ||
+    (search.status !== "all" && search.status !== "inbox") ||
+    search.priority !== "any" ||
+    search.stale;
 
   function patch(next: Partial<IssueFeedSearch>) {
     onSearchChange({ ...search, ...next });
   }
+
+  function clearFilters() {
+    patch({ q: "", repositoryId: "", status: "all", priority: "any", stale: false });
+  }
+
+  const emptyState = !connected ? (
+    <EmptyState
+      icon={<BookClosedIcon className="size-6" />}
+      title="No repositories connected yet"
+      description="Install the GitHub App on a repository, sync it, and its issues will land here for triage."
+      action={
+        <Button variant="primary" size="md" href="/repositories">
+          Connect a repository
+        </Button>
+      }
+    />
+  ) : hasFilters ? (
+    <EmptyState
+      icon={<SearchIcon className="size-6" />}
+      title={search.q ? `No results for “${search.q}”` : "No issues match these filters"}
+      description="Loosen a filter or clear them all to see everything across your repositories."
+      action={
+        <Button variant="secondary" size="md" onClick={clearFilters}>
+          Clear filters
+        </Button>
+      }
+    />
+  ) : (
+    <EmptyState
+      icon={<ClipboardIcon className="size-6" />}
+      title="All caught up"
+      description="Nothing is waiting in this view. Sync a repository to pull in anything new."
+      action={
+        <Button variant="secondary" size="md" href="/repositories">
+          Go to repositories
+        </Button>
+      }
+    />
+  );
 
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -162,12 +212,11 @@ export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
       {issues.isError && (
         <p className="text-destructive px-4 py-6">{errorMessage(issues.error)}</p>
       )}
-      {issues.isSuccess && search.view === "table" && <IssueTable rows={rows} />}
+      {issues.isSuccess && search.view === "table" && (
+        <IssueTable rows={rows} empty={emptyState} />
+      )}
       {issues.isSuccess && search.view === "board" && rows.length === 0 && (
-        <p className="text-subtle px-4 py-6">
-          No issues match these filters. Connect a repository and sync it to
-          pull issues in.
-        </p>
+        <div className="px-4">{emptyState}</div>
       )}
       {issues.isSuccess && search.view === "board" && rows.length > 0 && (
         <div className="min-h-0 flex-1 overflow-auto">
