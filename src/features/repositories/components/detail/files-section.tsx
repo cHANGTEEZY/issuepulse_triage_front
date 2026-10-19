@@ -1,7 +1,8 @@
+import { Drawer } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import type { RepositoryEntry } from "@/api/repositories";
 import Button from "@/components/_ui/button";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
-import BookClosedIcon from "@/public/assets/images/companies/sidebar/book-closed.svg?react";
 
 function formatSize(size: number) {
   if (size < 1024) return `${size} B`;
@@ -65,7 +66,7 @@ export default function FilesSection({ entries, path, onNavigate }: FilesSection
         {entries.length === 0 && (
           <li>
             <EmptyState
-              icon={<BookClosedIcon className="size-6" />}
+              illustration={<HairlineFigure figure={Drawer} />}
               title="This folder is empty"
               description="There are no files or folders at this path yet."
             />

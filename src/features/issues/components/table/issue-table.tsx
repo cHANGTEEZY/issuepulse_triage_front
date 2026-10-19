@@ -1,15 +1,17 @@
+import { Loupe } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import { useMemo, type ReactNode } from "react";
 import type { IssueRecord } from "@/api/issues";
 import DataTable from "@/components/_ui/data-table/data-table";
 import { createDataTableColumnHelper } from "@/components/_ui/data-table/table-features";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import IssueRow from "./issue-row";
-import SearchIcon from "@/public/assets/images/_common/search.svg?react";
 import {
   TABLE_COLUMNS,
   TABLE_GRID_CLASS,
   TABLE_ROW_CLASS,
 } from "./table-columns";
+import { ISSUE_FILTERS, ISSUE_SORTING } from "./table-config";
 
 const columnHelper = createDataTableColumnHelper<IssueRecord>();
 
@@ -40,10 +42,13 @@ export default function IssueTable({ rows, empty }: IssueTableProps) {
       tableClassName={TABLE_GRID_CLASS}
       rowClassName={TABLE_ROW_CLASS}
       countLabel="Issues in view"
+      filters={ISSUE_FILTERS}
+      sorting={ISSUE_SORTING}
+      columnToggle
       empty={
         empty ?? (
           <EmptyState
-            icon={<SearchIcon className="size-6" />}
+            illustration={<HairlineFigure figure={Loupe} />}
             title="No issues match these filters"
             description="Try a different search, or connect a repository and sync it to pull issues in."
           />

@@ -17,17 +17,33 @@ export const TABLE_COLUMNS: readonly RepositoryColumn[] = [
   {
     key: "repository",
     label: "Repository",
-    meta: { className: "justify-start", width: 320, minWidth: 220, maxWidth: 560 },
+    meta: {
+      className: "justify-start",
+      width: 320,
+      minWidth: 220,
+      maxWidth: 560,
+      hideable: false,
+    },
   },
   {
     key: "visibility",
     label: "Visibility",
-    meta: { className: "justify-start", width: 112, minWidth: 96, maxWidth: 140 },
+    meta: {
+      className: "justify-start",
+      width: 112,
+      minWidth: 96,
+      maxWidth: 140,
+    },
   },
   {
     key: "language",
     label: "Language",
-    meta: { className: "justify-start", width: 128, minWidth: 96, maxWidth: 180 },
+    meta: {
+      className: "justify-start",
+      width: 128,
+      minWidth: 96,
+      maxWidth: 180,
+    },
   },
   {
     key: "openIssues",
@@ -42,12 +58,22 @@ export const TABLE_COLUMNS: readonly RepositoryColumn[] = [
   {
     key: "pushed",
     label: "Last push",
-    meta: { className: "justify-start", width: 148, minWidth: 120, maxWidth: 200 },
+    meta: {
+      className: "justify-start",
+      width: 148,
+      minWidth: 120,
+      maxWidth: 200,
+    },
   },
   {
     key: "synced",
     label: "Last sync",
-    meta: { className: "justify-start", width: 148, minWidth: 120, maxWidth: 200 },
+    meta: {
+      className: "justify-start",
+      width: 148,
+      minWidth: 120,
+      maxWidth: 200,
+    },
   },
   {
     key: "action",
@@ -65,5 +91,7 @@ export const TABLE_ROW_CLASS = "col-span-full grid grid-cols-subgrid";
 export const TABLE_CELL_CLASS = "flex min-w-0 items-center overflow-hidden";
 
 export function columnClass(key: TableColumnKey) {
-  return TABLE_COLUMNS.find((column) => column.key === key)?.meta.className ?? "";
+  return (
+    TABLE_COLUMNS.find((column) => column.key === key)?.meta.className ?? ""
+  );
 }

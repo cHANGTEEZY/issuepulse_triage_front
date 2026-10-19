@@ -11,6 +11,8 @@ export interface EmptyStateProps {
   description: string;
   action?: ReactNode;
   icon?: ReactNode;
+  /** A larger drawing shown in place of the icon tile. */
+  illustration?: ReactNode;
   className?: string;
   /** Optional accessible label for the state region. */
   label?: string;
@@ -69,14 +71,14 @@ function HeightFrame({ reduce, morphKey, children }: { reduce: boolean | null; m
   </motion.div>;
 }
 
-export function EmptyState({ title, description, action, icon, className, label }: EmptyStateProps) {
+export function EmptyState({ title, description, action, icon, illustration, className, label }: EmptyStateProps) {
   const reduce = useReducedMotion();
   const glyph = icon ?? <Folder width={24} height={24} strokeWidth={1.5} />;
   const enter: Transition = reduce ? { duration: motionTokens.duration.instant } : { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter] };
   const swap: MotionProps = { initial: reduce ? { opacity: 0 } : textIn, animate: shown, exit: reduce ? fadeOut : textOut, transition: enter };
   // The result of an action morphs in place: the icon crossfades and the copy rises in while the old copy leaves.
   return <section className={[styles.root, className].filter(Boolean).join(" ")} aria-label={label}>
-    <div className={styles.icon} aria-hidden="true"><AnimatePresence mode="popLayout" initial={false}><Swap key={iconKey(glyph)} className={styles.glyph} initial={reduce ? { opacity: 0 } : iconIn} animate={shown} exit={reduce ? fadeOut : { ...iconIn, transition: exitFast }} transition={reduce ? enter : motionTokens.spring.snappy}>{glyph}</Swap></AnimatePresence></div>
+    {illustration ? <div className={styles.illustration} aria-hidden="true">{illustration}</div> : <div className={styles.icon} aria-hidden="true"><AnimatePresence mode="popLayout" initial={false}><Swap key={iconKey(glyph)} className={styles.glyph} initial={reduce ? { opacity: 0 } : iconIn} animate={shown} exit={reduce ? fadeOut : { ...iconIn, transition: exitFast }} transition={reduce ? enter : motionTokens.spring.snappy}>{glyph}</Swap></AnimatePresence></div>}
     <HeightFrame reduce={reduce} morphKey={`${title}\n${description}`}>
       <h3><AnimatePresence mode="popLayout" initial={false}><Swap key={title} className={styles.line} {...swap}>{title}</Swap></AnimatePresence></h3>
       <p><AnimatePresence mode="popLayout" initial={false}><Swap key={description} className={styles.line} {...swap}>{description}</Swap></AnimatePresence></p>

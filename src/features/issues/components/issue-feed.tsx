@@ -1,3 +1,5 @@
+import { Basket, Loupe, Plug } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import { Link } from "@tanstack/react-router";
 import CommandSearch from "@/components/_common/command-search";
 import PageHeader from "@/components/_common/page-header";
@@ -24,9 +26,6 @@ import IssueBadges from "@/features/issues/components/issue-badges";
 import IssueTable from "@/features/issues/components/table/issue-table";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import { PRIORITY_LABEL, STATUS_LABEL } from "@/features/issues/lib/triage";
-import SearchIcon from "@/public/assets/images/_common/search.svg?react";
-import BookClosedIcon from "@/public/assets/images/companies/sidebar/book-closed.svg?react";
-import ClipboardIcon from "@/public/assets/images/companies/sidebar/clipboard.svg?react";
 import {
   type FeedPriority,
   type FeedStatus,
@@ -74,7 +73,7 @@ export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
 
   const emptyState = !connected ? (
     <EmptyState
-      icon={<BookClosedIcon className="size-6" />}
+      illustration={<HairlineFigure figure={Plug} />}
       title="No repositories connected yet"
       description="Install the GitHub App on a repository, sync it, and its issues will land here for triage."
       action={
@@ -85,7 +84,7 @@ export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
     />
   ) : hasFilters ? (
     <EmptyState
-      icon={<SearchIcon className="size-6" />}
+      illustration={<HairlineFigure figure={Loupe} />}
       title={search.q ? `No results for “${search.q}”` : "No issues match these filters"}
       description="Loosen a filter or clear them all to see everything across your repositories."
       action={
@@ -96,7 +95,7 @@ export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
     />
   ) : (
     <EmptyState
-      icon={<ClipboardIcon className="size-6" />}
+      illustration={<HairlineFigure figure={Basket} />}
       title="All caught up"
       description="Nothing is waiting in this view. Sync a repository to pull in anything new."
       action={

@@ -16,6 +16,8 @@ export interface DropdownItem {
   destructive?: boolean;
   separatorBefore?: boolean;
   selected?: boolean;
+  /** Keeps the menu open after the item is chosen, for toggles that people flip in a row. */
+  keepOpen?: boolean;
 }
 
 export interface DropdownMenuProps {
@@ -30,13 +32,21 @@ export interface DropdownMenuProps {
   menuClassName?: string;
 }
 
-type Highlight = { top: number; height: number; danger: boolean; glide: boolean };
+type Highlight = {
+  top: number;
+  height: number;
+  danger: boolean;
+  glide: boolean;
+};
 
 function TriggerLabel({ text }: { text: string }) {
   const reduced = useReducedMotion();
   const measure = useRef<HTMLSpanElement>(null);
   const measured = useRef<string | null>(null);
-  const [size, setSize] = useState<{ width: number | "auto"; animate: boolean }>({
+  const [size, setSize] = useState<{
+    width: number | "auto";
+    animate: boolean;
+  }>({
     width: "auto",
     animate: false,
   });
@@ -48,7 +58,9 @@ function TriggerLabel({ text }: { text: string }) {
       const animate = measured.current !== null && measured.current !== current;
       measured.current = current;
       setSize({
-        width: Math.ceil(entry.borderBoxSize?.[0]?.inlineSize ?? node.offsetWidth),
+        width: Math.ceil(
+          entry.borderBoxSize?.[0]?.inlineSize ?? node.offsetWidth,
+        ),
         animate,
       });
     });
@@ -60,7 +72,9 @@ function TriggerLabel({ text }: { text: string }) {
       className={styles.label}
       initial={false}
       animate={{ width: size.width }}
-      transition={size.animate && !reduced ? motionTokens.spring.morph : { duration: 0 }}
+      transition={
+        size.animate && !reduced ? motionTokens.spring.morph : { duration: 0 }
+      }
     >
       <span ref={measure} className={styles.labelMeasure} aria-hidden="true">
         {text}
@@ -72,7 +86,11 @@ function TriggerLabel({ text }: { text: string }) {
           initial={
             reduced
               ? false
-              : { opacity: 0, y: "0.3em", filter: `blur(${motionTokens.blur.soft}px)` }
+              : {
+                  opacity: 0,
+                  y: "0.3em",
+                  filter: `blur(${motionTokens.blur.soft}px)`,
+                }
           }
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           exit={
@@ -210,14 +228,20 @@ export function DropdownMenu({
                 <DropdownPrimitive.Separator className={styles.separator} />
               )}
               <DropdownPrimitive.Item
-                className={[styles.item, item.destructive ? styles.destructive : ""]
+                className={[
+                  styles.item,
+                  item.destructive ? styles.destructive : "",
+                ]
                   .filter(Boolean)
                   .join(" ")}
                 data-tone={item.destructive ? "danger" : undefined}
                 data-selected={item.selected ? "true" : undefined}
                 style={{ "--i": index } as CSSProperties}
                 disabled={item.disabled}
-                onSelect={item.onSelect}
+                onSelect={(event) => {
+                  if (item.keepOpen) event.preventDefault();
+                  item.onSelect?.();
+                }}
               >
                 {item.selected !== undefined && (
                   <span

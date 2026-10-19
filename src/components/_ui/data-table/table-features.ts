@@ -12,6 +12,10 @@ export type DataTableColumnMeta = {
   minWidth?: number;
   maxWidth?: number;
   resizable?: boolean;
+  /** Name used by the Columns menu and sort labels when `header` is not a plain string. */
+  label?: string;
+  /** Set to `false` to keep a column out of the Columns menu. */
+  hideable?: boolean;
 };
 
 export const dataTableFeatures = tableFeatures({

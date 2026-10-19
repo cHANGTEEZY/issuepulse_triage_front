@@ -1,11 +1,15 @@
 import type { ComponentProps } from "react";
+import { useDataTableViewState } from "@/components/_ui/data-table/data-table-context";
 import { cn } from "@/lib/utils";
 
 function Table({ className, ...props }: ComponentProps<"table">) {
   return (
     <table
       data-slot="table"
-      className={cn("w-full border-collapse text-[14px] leading-none", className)}
+      className={cn(
+        "w-full border-collapse text-[14px] leading-none",
+        className,
+      )}
       {...props}
     />
   );
@@ -45,10 +49,23 @@ function TableHead({ className, ...props }: ComponentProps<"th">) {
   );
 }
 
-function TableCell({ className, ...props }: ComponentProps<"td">) {
+type TableCellProps = ComponentProps<"td"> & {
+  /**
+   * Id of the DataTable column this cell belongs to. A cell tied to a column
+   * disappears when the viewer hides that column and is tinted while the rows
+   * are sorted by it.
+   */
+  column?: string;
+};
+
+function TableCell({ className, column, ...props }: TableCellProps) {
+  const { hiddenColumns, sortedColumn } = useDataTableViewState();
+  if (column && hiddenColumns.has(column)) return null;
+
   return (
     <td
       data-slot="table-cell"
+      data-sorted={column && column === sortedColumn ? "" : undefined}
       className={cn("h-[42px] px-3 align-middle whitespace-nowrap", className)}
       {...props}
     />

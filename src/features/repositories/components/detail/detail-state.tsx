@@ -1,7 +1,8 @@
+import { Plug } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import type { ReactNode } from "react";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import { isApiError } from "@/lib/apiClient";
-import AlertTriangleIcon from "@/public/assets/images/companies/sidebar/alert-triangle.svg?react";
 
 export function readError(error: unknown, fallback: string) {
   if (isApiError(error)) return error.message;
@@ -30,7 +31,7 @@ export default function DetailState({
     const message = readError(error, fallback);
     return (
       <EmptyState
-        icon={<AlertTriangleIcon className="size-6" />}
+        illustration={<HairlineFigure figure={Plug} />}
         className="max-w-[56em]"
         title={fallback}
         description={

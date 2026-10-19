@@ -1,8 +1,9 @@
+import { Terminal } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import type { RepositoryCommit } from "@/api/repositories";
 import Avatar from "@/components/_ui/avatar";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import { formatWhen } from "@/features/issues/lib/triage";
-import ClockIcon from "@/public/assets/images/companies/detail/clock.svg?react";
 
 function subject(message: string) {
   const [first = ""] = message.split("\n");
@@ -13,7 +14,7 @@ export default function CommitsSection({ commits }: { commits: RepositoryCommit[
   if (commits.length === 0) {
     return (
       <EmptyState
-        icon={<ClockIcon className="size-6" />}
+        illustration={<HairlineFigure figure={Terminal} />}
         className="max-w-[56em]"
         title="No commits yet"
         description="Commits on the default branch will appear here once the repository has history to show."

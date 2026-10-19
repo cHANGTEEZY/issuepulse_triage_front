@@ -1,15 +1,17 @@
+import { Loupe } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import { useMemo, type ReactNode } from "react";
 import type { RepositoryRecord } from "@/api/repositories";
 import DataTable from "@/components/_ui/data-table/data-table";
 import { createDataTableColumnHelper } from "@/components/_ui/data-table/table-features";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import RepositoryRow from "./repository-row";
-import SearchIcon from "@/public/assets/images/_common/search.svg?react";
 import {
   TABLE_COLUMNS,
   TABLE_GRID_CLASS,
   TABLE_ROW_CLASS,
 } from "./table-columns";
+import { REPOSITORY_FILTERS, REPOSITORY_SORTING } from "./table-config";
 
 const columnHelper = createDataTableColumnHelper<RepositoryRecord>();
 
@@ -47,10 +49,13 @@ export default function RepositoryTable({
       tableClassName={TABLE_GRID_CLASS}
       rowClassName={TABLE_ROW_CLASS}
       countLabel="Repositories in view"
+      filters={REPOSITORY_FILTERS}
+      sorting={REPOSITORY_SORTING}
+      columnToggle
       empty={
         empty ?? (
           <EmptyState
-            icon={<SearchIcon className="size-6" />}
+            illustration={<HairlineFigure figure={Loupe} />}
             title="No repositories match this search"
             description="Try a shorter name, or check the spelling of the owner and repository."
           />

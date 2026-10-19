@@ -1,4 +1,6 @@
-.figure { container-type: inline-size; display: grid; min-width: 0; margin: 0; color: var(--foreground); font-family: var(--font-body); letter-spacing: var(--tracking-body); }
+/* Positioned so the visually hidden summary and table below stay inside the figure; an absolutely positioned .srOnly would
+   otherwise fall back to an ancestor outside the app shell as its containing block and stretch the document. */
+.figure { position: relative; container-type: inline-size; display: grid; min-width: 0; margin: 0; color: var(--foreground); font-family: var(--font-body); letter-spacing: var(--tracking-body); }
 .figure > * { min-width: 0; }
 .figure[data-legend] { gap: var(--space-6); }
 @container (min-width: 460px) {

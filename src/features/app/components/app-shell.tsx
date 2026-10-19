@@ -5,9 +5,9 @@ import Sidebar from "./sidebar/sidebar";
 
 export default function AppShell({ children }: { children: ReactNode }) {
   return (
-    <main className="flex h-dvh max-w-full overflow-hidden">
+    <main className="relative flex h-dvh max-w-full overflow-clip">
       <Sidebar />
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col px-2 lg:px-6">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-clip px-2 lg:px-6">
         {children}
       </div>
       <CommandMenu />

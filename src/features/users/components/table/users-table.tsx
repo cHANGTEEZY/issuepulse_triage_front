@@ -1,5 +1,7 @@
 "use client";
 
+import { Loupe } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import { useMemo } from "react";
 import type { User } from "@/api/users";
 import { Checkbox } from "@/components/_ui/checkbox";
@@ -7,7 +9,6 @@ import DataTable from "@/components/_ui/data-table/data-table";
 import { createDataTableColumnHelper } from "@/components/_ui/data-table/table-features";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import UserRow from "./user-row";
-import SearchIcon from "@/public/assets/images/_common/search.svg?react";
 import {
   TABLE_COLUMNS,
   TABLE_GRID_CLASS,
@@ -84,7 +85,7 @@ export default function UsersTable() {
       countLabel="Users in view"
       empty={
         <EmptyState
-          icon={<SearchIcon className="size-6" />}
+          illustration={<HairlineFigure figure={Loupe} />}
           title="No users match these filters"
           description="Try a different search, role, or status to see more people."
         />

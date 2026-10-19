@@ -1,3 +1,5 @@
+import { Query } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import PageHeader from "@/components/_common/page-header";
@@ -19,7 +21,6 @@ import {
 import { useAssignees, useIssue, useUpdateTriage } from "@/api/hooks/use-issues";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import IssueBadges from "@/features/issues/components/issue-badges";
-import AlertTriangleIcon from "@/public/assets/images/companies/sidebar/alert-triangle.svg?react";
 import MarkdownBody from "@/features/issues/components/markdown-body";
 import {
   PRIORITY_LABEL,
@@ -83,7 +84,7 @@ export default function IssueDetail({ issueId }: { issueId: string }) {
         {issue.isPending && <p className="text-subtle">Loading issue…</p>}
         {issue.isError && (
           <EmptyState
-            icon={<AlertTriangleIcon className="size-6" />}
+            illustration={<HairlineFigure figure={Query} />}
             title="Issue not found"
             description={
               isApiError(issue.error)

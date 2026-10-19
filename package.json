@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
+    "@lucasmarkes/hairline": "^0.5.1",
     "@radix-ui/react-dropdown-menu": "^2.1.25",
     "@rive-app/canvas": "^2.31.0",
     "@rive-app/react-canvas": "^4.31.0",

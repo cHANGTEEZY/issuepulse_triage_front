@@ -1,3 +1,5 @@
+import { Loupe, Plug } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import { useState } from "react";
 import PageHeader from "@/components/_common/page-header";
 import Button from "@/components/_ui/button";
@@ -10,8 +12,6 @@ import {
 } from "@/api/hooks/use-repositories";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import RepositoryTable from "@/features/repositories/components/table/repository-table";
-import SearchIcon from "@/public/assets/images/_common/search.svg?react";
-import BookClosedIcon from "@/public/assets/images/companies/sidebar/book-closed.svg?react";
 
 function errorMessage(error: unknown, fallback: string) {
   if (isApiError(error)) return error.message;
@@ -98,7 +98,7 @@ export default function RepositoryList() {
       {!repositories.isPending && !connected && (
         <div className="px-4">
           <EmptyState
-            icon={<BookClosedIcon className="size-6" />}
+            illustration={<HairlineFigure figure={Plug} />}
             title="No repositories yet"
             description="Connect the GitHub App to a repository and it will show up here, ready to sync its issues."
             action={
@@ -121,7 +121,7 @@ export default function RepositoryList() {
           onSync={(id) => sync.mutate(id)}
           empty={
             <EmptyState
-              icon={<SearchIcon className="size-6" />}
+              illustration={<HairlineFigure figure={Loupe} />}
               title={`No results for “${query.trim()}”`}
               description="No connected repository matches that name. Try a shorter search."
               action={

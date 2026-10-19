@@ -25,6 +25,9 @@ export default defineConfig({
       "src/routeTree.gen.ts",
       "public/**",
       "scripts/**",
+      ".agents/**",
+      "hairline/**",
+      "src/lib/hairline/*.js",
     ],
     rules: {
       "constructor-super": "error",
@@ -171,7 +174,7 @@ export default defineConfig({
     printWidth: 80,
     sortPackageJson: false,
     sortTailwindcss: {},
-    ignorePatterns: [],
+    ignorePatterns: [".agents/**", "hairline/**", "src/lib/hairline/*.js"],
   },
   preview: {
     allowedHosts: true,

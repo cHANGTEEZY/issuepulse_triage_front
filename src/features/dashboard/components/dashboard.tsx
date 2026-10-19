@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { Plot, Plug } from "@lucasmarkes/hairline/react";
 import { useIssueList } from "@/api/hooks/use-issues";
 import {
   repositoryKeys,
@@ -10,6 +11,7 @@ import {
   useRepositoryCatalog,
   useSyncRepository,
 } from "@/api/hooks/use-repositories";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import PageHeader from "@/components/_common/page-header";
 import Button from "@/components/_ui/button";
 import { ActivityHeatmap } from "@/components/arc/activity-heatmap/activity-heatmap";
@@ -33,12 +35,16 @@ import {
   type RangeValue,
 } from "@/features/dashboard/lib/metrics";
 import DashboardCard from "./dashboard-card";
-import BookClosedIcon from "@/public/assets/images/companies/sidebar/book-closed.svg?react";
-import ClipboardIcon from "@/public/assets/images/companies/sidebar/clipboard.svg?react";
+import TriageHero from "./triage-hero";
 
 const FLOW_SERIES = [
   { key: "opened", label: "Opened", area: true },
-  { key: "updated", label: "Updated", color: "var(--tag-purple-text)", area: false },
+  {
+    key: "updated",
+    label: "Updated",
+    color: "var(--tag-purple-text)",
+    area: false,
+  },
 ];
 
 export default function Dashboard() {
@@ -103,199 +109,225 @@ export default function Dashboard() {
         }
       />
 
-      <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4 lg:gap-6 lg:py-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <ButtonGroup
-            label="Dashboard actions"
-            variant="solid"
-            items={[
-              {
-                id: "sync",
-                label: busy ? "Syncing…" : "Sync all repositories",
-                reserve: ["Syncing…", "Sync all repositories"],
-                disabled: busy || !connected,
-                onSelect: () => void syncAll(),
-              },
-              {
-                id: "refresh",
-                label: repositories.isRefreshing ? "Refreshing…" : "Refresh catalog",
-                reserve: ["Refreshing…", "Refresh catalog"],
-                disabled: repositories.isRefreshing,
-                onSelect: () =>
-                  void queryClient.invalidateQueries({
-                    queryKey: repositoryKeys.all(),
-                  }),
-              },
-              {
-                id: "connect",
-                label: install.isPending ? "Opening GitHub…" : "Connect repository",
-                reserve: ["Opening GitHub…", "Connect repository"],
-                disabled: install.isPending,
-                onSelect: () => void connect(),
-              },
-            ]}
-          />
-          <ButtonGroup
-            label="Go to"
-            variant="outline"
-            items={[
-              {
-                id: "issues",
-                label: "Issues",
-                onSelect: () => void navigate({ to: "/" }),
-              },
-              {
-                id: "untriaged",
-                label: "Untriaged",
-                onSelect: () => void navigate({ to: "/", search: { status: "inbox" } }),
-              },
-              {
-                id: "repositories",
-                label: "Repositories",
-                onSelect: () => void navigate({ to: "/repositories" }),
-              },
-            ]}
-          />
-        </div>
+      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
+        <div className="flex min-w-0 flex-col gap-4 px-4 py-4 lg:gap-6 lg:py-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <ButtonGroup
+              label="Dashboard actions"
+              variant="solid"
+              items={[
+                {
+                  id: "sync",
+                  label: busy ? "Syncing…" : "Sync all repositories",
+                  reserve: ["Syncing…", "Sync all repositories"],
+                  disabled: busy || !connected,
+                  onSelect: () => void syncAll(),
+                },
+                {
+                  id: "refresh",
+                  label: repositories.isRefreshing
+                    ? "Refreshing…"
+                    : "Refresh catalog",
+                  reserve: ["Refreshing…", "Refresh catalog"],
+                  disabled: repositories.isRefreshing,
+                  onSelect: () =>
+                    void queryClient.invalidateQueries({
+                      queryKey: repositoryKeys.all(),
+                    }),
+                },
+                {
+                  id: "connect",
+                  label: install.isPending
+                    ? "Opening GitHub…"
+                    : "Connect repository",
+                  reserve: ["Opening GitHub…", "Connect repository"],
+                  disabled: install.isPending,
+                  onSelect: () => void connect(),
+                },
+              ]}
+            />
+            <ButtonGroup
+              label="Go to"
+              variant="outline"
+              items={[
+                {
+                  id: "issues",
+                  label: "Issues",
+                  onSelect: () => void navigate({ to: "/" }),
+                },
+                {
+                  id: "untriaged",
+                  label: "Untriaged",
+                  onSelect: () =>
+                    void navigate({ to: "/", search: { status: "inbox" } }),
+                },
+                {
+                  id: "repositories",
+                  label: "Repositories",
+                  onSelect: () => void navigate({ to: "/repositories" }),
+                },
+              ]}
+            />
+          </div>
 
-        {sync.isError && (
-          <p className="text-destructive">Sync failed. Try again in a moment.</p>
-        )}
+          {sync.isError && (
+            <p className="text-destructive">
+              Sync failed. Try again in a moment.
+            </p>
+          )}
 
-        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(13em,1fr))]">
-          <MetricCard label="Open issues" {...metrics.open} />
-          <MetricCard label="New issues" {...metrics.opened} />
-          <MetricCard label="Untriaged" {...metrics.untriaged} />
-          <MetricCard label="High priority" {...metrics.highPriority} />
-          <MetricCard label="Stale" {...metrics.stale} />
-          <MetricCard label="Pull requests" {...metrics.pulls} />
-          <MetricCard label="Repositories" {...metrics.repositories} />
-        </div>
-
-        <DashboardCard className="[--heatmap-surface:var(--card)]">
-          <ActivityHeatmap
-            days={heatmap}
-            label="Issue activity over the last year"
-            period="the last year"
-            unit={{ one: "update", other: "updates" }}
-            selectedDate={selectedDay}
-            onSelectDate={setSelectedDay}
-          />
-        </DashboardCard>
-
-        {!issues.isPending && issueRows.length === 0 ? (
-          <DashboardCard>
-            <EmptyState
-              icon={
-                connected ? (
-                  <ClipboardIcon className="size-6" />
-                ) : (
-                  <BookClosedIcon className="size-6" />
-                )
-              }
-              title={connected ? "No issues synced yet" : "No repositories connected"}
-              description={
-                connected
-                  ? "Sync a repository to pull its issues in and the charts above will fill up."
-                  : "Install the GitHub App on a repository to start tracking its issues here."
-              }
-              action={
-                connected ? (
-                  <Button
-                    variant="primary"
-                    size="md"
-                    disabled={busy}
-                    onClick={() => void syncAll()}
-                  >
-                    {busy ? "Syncing…" : "Sync all repositories"}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    size="md"
-                    disabled={install.isPending}
-                    onClick={() => void connect()}
-                  >
-                    {install.isPending ? "Opening GitHub…" : "Connect repository"}
-                  </Button>
-                )
+          {issueRows.length > 0 && (
+            <TriageHero
+              untriaged={metrics.untriaged.value}
+              highPriority={metrics.highPriority.value}
+              repositories={repositoryRows.length}
+              onTriage={() =>
+                void navigate({ to: "/", search: { status: "inbox" } })
               }
             />
-          </DashboardCard>
-        ) : (
-          <>
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6">
-              <DashboardCard
-                title="Issue flow"
-                description="Issues opened and updated per day."
-              >
-                <LineChart
-                  data={flow}
-                  series={FLOW_SERIES}
-                  label="Issues opened and updated"
-                  height={240}
-                  loading={issues.isPending}
-                  unit=""
-                />
-              </DashboardCard>
-              <DashboardCard
-                title="Daily activity"
-                description="Issues touched per day against the average."
-              >
-                <BarChart
-                  data={flow}
-                  label="Issues updated"
-                  period={periodLabel(days)}
-                  unit=""
-                  averageLabel="Daily average"
-                  valueLabel="Updated"
-                  height={200}
-                />
-              </DashboardCard>
-            </div>
+          )}
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 lg:gap-6">
-              <DashboardCard
-                title="Triage status"
-                description="Where every synced issue sits in the pipeline."
-              >
-                <DonutChart
-                  data={statuses}
-                  label="Issues by triage status"
-                  totalLabel="Issues"
-                  size={184}
-                  thickness={22}
-                />
-              </DashboardCard>
-              <DashboardCard
-                title="Priority"
-                description="Open issues by assigned priority."
-              >
-                <DonutChart
-                  data={priorities}
-                  label="Open issues by priority"
-                  totalLabel="Open"
-                  size={184}
-                  thickness={22}
-                />
-              </DashboardCard>
-              <DashboardCard
-                title="By repository"
-                description="Open issues across connected repositories."
-                className="md:col-span-2 xl:col-span-1"
-              >
-                <DonutChart
-                  data={byRepository}
-                  label="Open issues by repository"
-                  totalLabel="Open"
-                  size={184}
-                  thickness={22}
-                  maxSegments={5}
-                />
-              </DashboardCard>
-            </div>
-          </>
-        )}
+          <div className="grid [grid-template-columns:repeat(auto-fit,minmax(13em,1fr))] gap-4">
+            <MetricCard label="Open issues" {...metrics.open} />
+            <MetricCard label="New issues" {...metrics.opened} />
+            <MetricCard label="Untriaged" {...metrics.untriaged} />
+            <MetricCard label="High priority" {...metrics.highPriority} />
+            <MetricCard label="Stale" {...metrics.stale} />
+            <MetricCard label="Pull requests" {...metrics.pulls} />
+            <MetricCard label="Repositories" {...metrics.repositories} />
+          </div>
+
+          <DashboardCard className="[--heatmap-surface:var(--card)]">
+            <ActivityHeatmap
+              days={heatmap}
+              label="Issue activity over the last year"
+              period="the last year"
+              unit={{ one: "update", other: "updates" }}
+              selectedDate={selectedDay}
+              onSelectDate={setSelectedDay}
+            />
+          </DashboardCard>
+
+          {!issues.isPending && issueRows.length === 0 ? (
+            <DashboardCard>
+              <EmptyState
+                illustration={
+                  <HairlineFigure
+                    key={connected ? "plot" : "plug"}
+                    figure={connected ? Plot : Plug}
+                    surface="card"
+                  />
+                }
+                title={
+                  connected
+                    ? "No issues synced yet"
+                    : "No repositories connected"
+                }
+                description={
+                  connected
+                    ? "Sync a repository to pull its issues in and the charts above will fill up."
+                    : "Install the GitHub App on a repository to start tracking its issues here."
+                }
+                action={
+                  connected ? (
+                    <Button
+                      variant="primary"
+                      size="md"
+                      disabled={busy}
+                      onClick={() => void syncAll()}
+                    >
+                      {busy ? "Syncing…" : "Sync all repositories"}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      size="md"
+                      disabled={install.isPending}
+                      onClick={() => void connect()}
+                    >
+                      {install.isPending
+                        ? "Opening GitHub…"
+                        : "Connect repository"}
+                    </Button>
+                  )
+                }
+              />
+            </DashboardCard>
+          ) : (
+            <>
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6">
+                <DashboardCard
+                  title="Issue flow"
+                  description="Issues opened and updated per day."
+                >
+                  <LineChart
+                    data={flow}
+                    series={FLOW_SERIES}
+                    label="Issues opened and updated"
+                    height={240}
+                    loading={issues.isPending}
+                    unit=""
+                  />
+                </DashboardCard>
+                <DashboardCard
+                  title="Daily activity"
+                  description="Issues touched per day against the average."
+                >
+                  <BarChart
+                    data={flow}
+                    label="Issues updated"
+                    period={periodLabel(days)}
+                    unit=""
+                    averageLabel="Daily average"
+                    valueLabel="Updated"
+                    height={200}
+                  />
+                </DashboardCard>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 lg:gap-6 xl:grid-cols-3">
+                <DashboardCard
+                  title="Triage status"
+                  description="Where every synced issue sits in the pipeline."
+                >
+                  <DonutChart
+                    data={statuses}
+                    label="Issues by triage status"
+                    totalLabel="Issues"
+                    size={184}
+                    thickness={22}
+                  />
+                </DashboardCard>
+                <DashboardCard
+                  title="Priority"
+                  description="Open issues by assigned priority."
+                >
+                  <DonutChart
+                    data={priorities}
+                    label="Open issues by priority"
+                    totalLabel="Open"
+                    size={184}
+                    thickness={22}
+                  />
+                </DashboardCard>
+                <DashboardCard
+                  title="By repository"
+                  description="Open issues across connected repositories."
+                  className="md:col-span-2 xl:col-span-1"
+                >
+                  <DonutChart
+                    data={byRepository}
+                    label="Open issues by repository"
+                    totalLabel="Open"
+                    size={184}
+                    thickness={22}
+                    maxSegments={5}
+                  />
+                </DashboardCard>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </section>
   );

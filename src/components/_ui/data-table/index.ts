@@ -5,6 +5,18 @@ export {
   TABLE_SEARCH_DEBOUNCE_MS,
 } from "./data-table-search";
 export {
+  DEFAULT_DATE_PRESETS,
+  dateFilter,
+  optionsFilter,
+  rangeFilter,
+  type DataTableFilter,
+  type DataTableFilterOption,
+  type DataTableSort,
+  type DataTableSortAccessors,
+  type DatePreset,
+  type NumberRange,
+} from "./data-table-filters";
+export {
   createDataTableColumnHelper,
   dataTableFeatures,
   type DataTableColumnMeta,

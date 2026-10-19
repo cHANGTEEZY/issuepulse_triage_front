@@ -1,4 +1,6 @@
-.figure { display: grid; min-width: 0; gap: var(--space-5); margin: 0; color: var(--foreground); }
+/* Positioned so the visually hidden table below stays inside the figure; an absolutely positioned .srOnly would otherwise
+   fall back to the body as its containing block and stretch the document past the app shell. */
+.figure { position: relative; display: grid; min-width: 0; gap: var(--space-5); margin: 0; color: var(--foreground); }
 
 /* The headline is the readout: the average at rest, the scrubbed bar while exploring. Each line keeps its height, so swaps never move the plot. */
 .header { display: grid; min-width: 0; gap: 2px; }

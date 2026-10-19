@@ -21,7 +21,7 @@ export default function IssueRow({ issue }: { issue: IssueRecord }) {
 
   return (
     <TableRow role="row" className={cn(TABLE_ROW_CLASS, "hover:bg-card/60")}>
-      <TableCell role="cell" className={cellClass("issue")}>
+      <TableCell role="cell" column="issue" className={cellClass("issue")}>
         <span className="flex min-w-0 flex-col gap-1">
           <Link
             to="/issues/$issueId"
@@ -36,15 +36,22 @@ export default function IssueRow({ issue }: { issue: IssueRecord }) {
           </span>
         </span>
       </TableCell>
-      <TableCell role="cell" className={cellClass("repository")}>
-        <span className="truncate" title={`${issue.repository.owner}/${issue.repository.name}`}>
+      <TableCell
+        role="cell"
+        column="repository"
+        className={cellClass("repository")}
+      >
+        <span
+          className="truncate"
+          title={`${issue.repository.owner}/${issue.repository.name}`}
+        >
           {issue.repository.owner}/{issue.repository.name}
         </span>
       </TableCell>
-      <TableCell role="cell" className={cellClass("triage")}>
+      <TableCell role="cell" column="triage" className={cellClass("triage")}>
         <OverflowRow items={issueBadgeItems(issue)} />
       </TableCell>
-      <TableCell role="cell" className={cellClass("updated")}>
+      <TableCell role="cell" column="updated" className={cellClass("updated")}>
         <span className="truncate">{formatWhen(issue.githubUpdatedAt)}</span>
       </TableCell>
     </TableRow>

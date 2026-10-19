@@ -1,3 +1,5 @@
+import { Query } from "@lucasmarkes/hairline/react";
+import HairlineFigure from "@/components/_common/hairline-figure";
 import type { ReactNode } from "react";
 import {
   HeadContent,
@@ -8,7 +10,6 @@ import {
 import ScrollToTop from "@/components/_common/scroll-to-top";
 import Button from "@/components/_ui/button";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
-import MessageQuestionIcon from "@/public/assets/images/companies/sidebar/message-question.svg?react";
 import Providers from "@/components/providers";
 import { SIDEBAR_WIDTH_SCRIPT } from "@/lib/sidebar";
 import { THEME_SCRIPT } from "@/lib/theme";
@@ -41,7 +42,7 @@ function NotFoundPage() {
   return (
     <main className="flex min-h-dvh items-center justify-center px-4">
       <EmptyState
-        icon={<MessageQuestionIcon className="size-6" />}
+        illustration={<HairlineFigure figure={Query} />}
         title="Page not found"
         description="The page you are looking for has moved, or the link is broken. Head back to your issues to keep triaging."
         action={
