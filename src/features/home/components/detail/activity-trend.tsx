@@ -30,10 +30,12 @@ export default function ActivityTrend({ company }: ActivityTrendProps) {
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <div className="flex items-baseline gap-[3px]">
-          <span className="block text-[24px] leading-none">{activity.total}</span>
+          <span className="block text-[24px] leading-none">
+            {activity.total}
+          </span>
           <Sparkline values={company.trend} className="h-[22px]" />
         </div>
-        <span className="caption-style block text-soft">
+        <span className="caption-style text-soft block">
           Spikes around QBR prep and renewal review
         </span>
       </div>
@@ -41,9 +43,9 @@ export default function ActivityTrend({ company }: ActivityTrendProps) {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-col gap-3 rounded-lg border border-line-strong p-[11px]"
+            className="border-line-strong flex flex-col gap-3 rounded-lg border p-[11px]"
           >
-            <span className="caption-style flex items-center gap-1 text-soft">
+            <span className="caption-style text-soft flex items-center gap-1">
               <stat.icon aria-hidden className="size-3 shrink-0" />
               {stat.label}
             </span>

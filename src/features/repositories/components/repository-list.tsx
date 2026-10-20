@@ -74,7 +74,10 @@ export default function RepositoryList() {
 
       {install.isError && (
         <p className="text-destructive px-4 py-3">
-          {errorMessage(install.error, "Could not open the GitHub install page.")}
+          {errorMessage(
+            install.error,
+            "Could not open the GitHub install page.",
+          )}
         </p>
       )}
       {sync.isError && (
@@ -84,7 +87,10 @@ export default function RepositoryList() {
       )}
       {repositories.refreshError && !connected && (
         <p className="text-destructive px-4 py-3">
-          {errorMessage(repositories.refreshError, "Could not refresh repositories from GitHub.")}
+          {errorMessage(
+            repositories.refreshError,
+            "Could not refresh repositories from GitHub.",
+          )}
         </p>
       )}
       {repositories.isPending && (
@@ -125,7 +131,11 @@ export default function RepositoryList() {
               title={`No results for “${query.trim()}”`}
               description="No connected repository matches that name. Try a shorter search."
               action={
-                <Button variant="secondary" size="md" onClick={() => setQuery("")}>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => setQuery("")}
+                >
                   Clear search
                 </Button>
               }

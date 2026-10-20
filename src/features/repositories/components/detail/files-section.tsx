@@ -1,109 +1,164 @@
+import { useMemo, useState } from "react";
+import { Folder } from "lucide-react";
 import { Drawer } from "@lucasmarkes/hairline/react";
 import HairlineFigure from "@/components/_common/hairline-figure";
-import type { RepositoryEntry } from "@/api/repositories";
+import { useRepositoryTree } from "@/api/hooks/use-repositories";
 import Button from "@/components/_ui/button";
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
-
-function formatSize(size: number) {
-  if (size < 1024) return `${size} B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-}
+import { TreeView, type TreeNode } from "@/components/arc/tree-view/tree-view";
+import { cn } from "@/lib/utils";
+import {
+  expandedFolderIds,
+  fileTree,
+  type FileTreeNode,
+} from "@/features/repositories/lib/file-tree";
+import DetailState from "./detail-state";
+import FileView from "./file-view";
 
 type FilesSectionProps = {
-  entries: RepositoryEntry[];
-  path: string;
-  onNavigate: (path: string) => void;
+  repositoryId: string;
+  defaultBranch: string;
+  folder: string;
+  file: string | undefined;
+  branch: string | undefined;
+  isNew: boolean;
+  htmlUrl: string | undefined;
+  onOpenFile: (path: string) => void;
+  onNewFile: (folder: string) => void;
+  onClose: () => void;
+  onRefChange: (ref: string) => void;
+  onOpened: (path: string, ref: string) => void;
+  onComposePull: (head: string, base: string) => void;
 };
 
-export default function FilesSection({ entries, path, onNavigate }: FilesSectionProps) {
-  const segments = path.split("/").filter(Boolean);
-  const parent = segments.slice(0, -1).join("/");
+function withIcons(nodes: FileTreeNode[]): FileTreeNode[] {
+  return nodes.map((node) => {
+    const children = node.children ? withIcons(node.children) : undefined;
+    const emptyFolder = node.kind === "dir" && !children?.length;
+    return {
+      ...node,
+      children,
+      icon: emptyFolder ? <Folder /> : undefined,
+    };
+  });
+}
+
+export default function FilesSection({
+  repositoryId,
+  defaultBranch,
+  folder,
+  file,
+  branch,
+  isNew,
+  htmlUrl,
+  onOpenFile,
+  onNewFile,
+  onClose,
+  onRefChange,
+  onOpened,
+  onComposePull,
+}: FilesSectionProps) {
+  const treeRef = branch ?? defaultBranch;
+  const tree = useRepositoryTree(repositoryId, branch ?? "");
+  const [pickedFolder, setPickedFolder] = useState<string | null>(null);
+  const viewing = Boolean(file) || isNew;
+  const createIn = pickedFolder ?? folder;
+  const nodes = useMemo(
+    () => withIcons(fileTree(tree.data?.entries ?? [])),
+    [tree.data?.entries],
+  );
+  const expanded = expandedFolderIds(file, folder);
+
+  function select(node: TreeNode) {
+    const item = node as FileTreeNode;
+    if (item.kind === "dir") {
+      setPickedFolder(item.path);
+      return;
+    }
+    if (item.kind === "submodule") {
+      if (!htmlUrl) return;
+      const encoded = item.path.split("/").map(encodeURIComponent).join("/");
+      window.open(
+        `${htmlUrl}/tree/${encodeURIComponent(treeRef)}/${encoded}`,
+        "_blank",
+        "noopener",
+      );
+      return;
+    }
+    setPickedFolder(item.path.split("/").slice(0, -1).join("/"));
+    onOpenFile(item.path);
+  }
 
   return (
-    <div className="flex max-w-[56em] flex-col gap-3">
-      <nav aria-label="Path" className="caption-style flex flex-wrap items-center gap-1">
-        <Button variant="ghost" size="none" className="px-1 py-0.5 font-normal" onClick={() => onNavigate("")}>
-          root
-        </Button>
-        {segments.map((segment, index) => {
-          const target = segments.slice(0, index + 1).join("/");
-          const last = index === segments.length - 1;
-          return (
-            <span key={target} className="flex items-center gap-1">
-              <span aria-hidden className="text-subtle">
-                /
-              </span>
-              {last ? (
-                <span className="px-1 py-0.5 font-medium">{segment}</span>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="none"
-                  className="px-1 py-0.5 font-normal"
-                  onClick={() => onNavigate(target)}
-                >
-                  {segment}
-                </Button>
-              )}
-            </span>
-          );
-        })}
-      </nav>
-
-      <ul className="border-border flex flex-col rounded-lg border">
-        {segments.length > 0 && (
-          <li className="border-border border-b">
-            <button
-              type="button"
-              onClick={() => onNavigate(parent)}
-              className="hover:bg-card/60 flex w-full items-center px-3 py-2 text-left"
-            >
-              ..
-            </button>
-          </li>
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+      <div
+        className={cn(
+          "flex w-full min-w-0 flex-col gap-3 lg:sticky lg:top-0 lg:w-[22em]",
+          viewing && "max-lg:hidden",
         )}
-        {entries.length === 0 && (
-          <li>
+      >
+        <div className="flex justify-end">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onNewFile(createIn)}
+          >
+            New file
+          </Button>
+        </div>
+        <DetailState
+          isPending={tree.isPending}
+          isError={tree.isError}
+          error={tree.error}
+          fallback="Could not load files."
+          pendingLabel="Loading files…"
+        >
+          {nodes.length === 0 ? (
             <EmptyState
               illustration={<HairlineFigure figure={Drawer} />}
-              title="This folder is empty"
-              description="There are no files or folders at this path yet."
+              title="This repository is empty"
+              description="There are no files on the default branch yet."
             />
-          </li>
+          ) : (
+            <>
+              <div className="lg:max-h-[calc(100dvh-16rem)] lg:overflow-y-auto">
+                <TreeView
+                  key={treeRef}
+                  nodes={nodes}
+                  defaultExpandedIds={expanded}
+                  onSelect={select}
+                  aria-label="Repository files"
+                />
+              </div>
+              {tree.data?.truncated && (
+                <p className="caption-style text-subtle px-1">
+                  GitHub returned part of this tree. Some files are not listed.
+                </p>
+              )}
+            </>
+          )}
+        </DetailState>
+      </div>
+
+      <div className={cn("min-w-0 flex-1", !viewing && "max-lg:hidden")}>
+        {viewing ? (
+          <FileView
+            key={isNew ? `new-${createIn}` : file}
+            repositoryId={repositoryId}
+            defaultBranch={defaultBranch}
+            path={file ?? ""}
+            folder={isNew ? createIn : folder}
+            branch={branch}
+            isNew={isNew}
+            onRefChange={onRefChange}
+            onClose={onClose}
+            onOpened={onOpened}
+            onComposePull={onComposePull}
+          />
+        ) : (
+          <p className="text-subtle py-6">Select a file to read or edit it.</p>
         )}
-        {entries.map((entry) => (
-          <li key={entry.path} className="border-border border-b last:border-b-0">
-            {entry.type === "dir" ? (
-              <button
-                type="button"
-                onClick={() => onNavigate(entry.path)}
-                className="hover:bg-card/60 flex w-full items-center justify-between gap-3 px-3 py-2 text-left"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <span aria-hidden className="bg-subtle size-2 shrink-0 rounded-sm" />
-                  <span className="truncate font-medium">{entry.name}/</span>
-                </span>
-              </button>
-            ) : (
-              <a
-                href={entry.htmlUrl ?? undefined}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:bg-card/60 flex items-center justify-between gap-3 px-3 py-2"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <span aria-hidden className="border-subtle size-2 shrink-0 rounded-sm border" />
-                  <span className="truncate">{entry.name}</span>
-                </span>
-                <span className="caption-style text-subtle shrink-0 tabular-nums">
-                  {formatSize(entry.size)}
-                </span>
-              </a>
-            )}
-          </li>
-        ))}
-      </ul>
+      </div>
     </div>
   );
 }

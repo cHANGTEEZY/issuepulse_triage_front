@@ -36,7 +36,12 @@ export default function TriageHero({
             : `Across ${plural(repositories, "repository", "repositories")}, with ${plural(highPriority, "high-priority issue", "high-priority issues")} still open.`}
         </p>
         {!clear && (
-          <Button variant="primary" size="md" className="mt-2" onClick={onTriage}>
+          <Button
+            variant="primary"
+            size="md"
+            className="mt-2"
+            onClick={onTriage}
+          >
             Start triaging
           </Button>
         )}

@@ -9,7 +9,10 @@ type ProfileAccountProps = {
   onOpen: () => void;
 };
 
-export default function ProfileAccount({ company, onOpen }: ProfileAccountProps) {
+export default function ProfileAccount({
+  company,
+  onOpen,
+}: ProfileAccountProps) {
   return (
     <li>
       <Button

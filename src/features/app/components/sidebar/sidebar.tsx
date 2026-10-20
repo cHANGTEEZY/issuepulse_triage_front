@@ -16,7 +16,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="relative hidden min-h-0 w-(--sidebar-width) shrink-0 border-r border-sidebar-border bg-sidebar lg:flex lg:flex-col">
+      <aside className="border-sidebar-border bg-sidebar relative hidden min-h-0 w-(--sidebar-width) shrink-0 border-r lg:flex lg:flex-col">
         <SidebarContent />
         <SidebarResizer />
       </aside>
@@ -24,7 +24,7 @@ export default function Sidebar() {
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent
           side="left"
-          className="w-[254px] max-w-[85vw] min-h-0 overflow-hidden border-sidebar-border bg-sidebar p-0"
+          className="border-sidebar-border bg-sidebar min-h-0 w-[254px] max-w-[85vw] overflow-hidden p-0"
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <SheetDescription className="sr-only">

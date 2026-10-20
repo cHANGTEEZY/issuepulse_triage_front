@@ -19,19 +19,20 @@ export default function PipelineHealth({ company }: PipelineHealthProps) {
   const stages = [
     { label: "Discovery", value: health.discovery, tone: "danger" as const },
     { label: "Evaluation", value: health.evaluation, tone: "warning" as const },
-    { label: "Procurement", value: health.procurement, tone: "success" as const },
+    {
+      label: "Procurement",
+      value: health.procurement,
+      tone: "success" as const,
+    },
   ];
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5">
-        <span
-          className="block leading-none font-semibold"
-          style={WIN_STYLE}
-        >
+        <span className="block leading-none font-semibold" style={WIN_STYLE}>
           <AnimatedCounter value={company.winProbability} suffix="%" />
         </span>
-        <span className="caption-style block text-soft">
+        <span className="caption-style text-soft block">
           Win probability across all open deals
         </span>
       </div>

@@ -11,7 +11,11 @@ import {
   STAGE_OPTIONS,
 } from "./filter-options";
 import type { SortKey } from "@/features/home/data/companies";
-import { TODAY, companiesCsvRows, filterCompanies } from "@/features/home/lib/companies";
+import {
+  TODAY,
+  companiesCsvRows,
+  filterCompanies,
+} from "@/features/home/lib/companies";
 import { downloadCsv } from "@/features/home/lib/csv";
 import { useCompaniesStore } from "@/features/home/stores/companies-store";
 import ShareIcon from "@/public/assets/images/companies/toolbar/share.svg?react";

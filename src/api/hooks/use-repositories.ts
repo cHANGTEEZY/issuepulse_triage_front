@@ -8,6 +8,8 @@ export const repositoryKeys = {
   commits: (id: string) => ["repositories", "commits", id] as const,
   contents: (id: string, path: string) =>
     ["repositories", "contents", id, path] as const,
+  tree: (id: string, ref: string) =>
+    ["repositories", "contents", id, "tree", ref] as const,
   pulls: (id: string) => ["repositories", "pulls", id] as const,
 };
 
@@ -26,6 +28,16 @@ export function useRepositoryCommits(id: string) {
     queryFn: async () => (await repositoriesApi.commits(id)).data,
     enabled: id.length > 0,
     retry: false,
+  });
+}
+
+export function useRepositoryTree(id: string, ref: string) {
+  return useQuery({
+    queryKey: repositoryKeys.tree(id, ref),
+    queryFn: async () => (await repositoriesApi.tree(id, ref)).data,
+    enabled: id.length > 0,
+    retry: false,
+    placeholderData: (previous) => previous,
   });
 }
 

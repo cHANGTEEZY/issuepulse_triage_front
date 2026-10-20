@@ -1,6 +1,10 @@
 import type { IssueRecord, TriagePriority, TriageStatus } from "@/api/issues";
 import type { RepositoryRecord } from "@/api/repositories";
-import { PRIORITY_LABEL, STATUS_LABEL, isStaleIssue } from "@/features/issues/lib/triage";
+import {
+  PRIORITY_LABEL,
+  STATUS_LABEL,
+  isStaleIssue,
+} from "@/features/issues/lib/triage";
 
 export const RANGES = [
   { value: "7", label: "7 days", days: 7 },
@@ -35,7 +39,10 @@ const longDay = new Intl.DateTimeFormat("en", {
   day: "numeric",
 });
 
-const shortDay = new Intl.DateTimeFormat("en", { month: "short", day: "numeric" });
+const shortDay = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
+});
 
 const periodDay = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -141,7 +148,10 @@ export function priorityShare(issues: IssueRecord[]) {
   const counts = new Map<TriagePriority, number>();
   for (const issue of issues) {
     if (issue.state !== "open") continue;
-    counts.set(issue.triage.priority, (counts.get(issue.triage.priority) ?? 0) + 1);
+    counts.set(
+      issue.triage.priority,
+      (counts.get(issue.triage.priority) ?? 0) + 1,
+    );
   }
   return (Object.keys(PRIORITY_LABEL) as TriagePriority[])
     .map((priority) => ({
@@ -196,17 +206,22 @@ export function headline(
     return time >= previousStart && time < rangeStart;
   }).length;
 
-  const untriaged = open.filter((issue) => issue.triage.status === "inbox").length;
+  const untriaged = open.filter(
+    (issue) => issue.triage.status === "inbox",
+  ).length;
   const highPriority = open.filter(
     (issue) =>
       issue.triage.status !== "done" &&
-      (issue.triage.priority === "critical" || issue.triage.priority === "high"),
+      (issue.triage.priority === "critical" ||
+        issue.triage.priority === "high"),
   ).length;
   const stale = issues.filter((issue) =>
     isStaleIssue(issue.githubUpdatedAt, issue.state, issue.triage.status),
   ).length;
   const pulls = open.filter((issue) => issue.isPullRequest).length;
-  const privateRepos = repositories.filter((repository) => repository.isPrivate).length;
+  const privateRepos = repositories.filter(
+    (repository) => repository.isPrivate,
+  ).length;
 
   return {
     open: {

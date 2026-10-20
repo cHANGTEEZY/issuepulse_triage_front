@@ -46,6 +46,17 @@ export type RepositoryEntry = {
   htmlUrl: string | null;
 };
 
+export type RepositoryTreeEntry = {
+  path: string;
+  type: "dir" | "file" | "submodule";
+  size: number;
+};
+
+export type RepositoryTree = {
+  truncated: boolean;
+  entries: RepositoryTreeEntry[];
+};
+
 export type RepositoryPull = {
   number: number;
   title: string;
@@ -80,9 +91,13 @@ export const repositoriesApi = {
   },
 
   refresh() {
-    return api.post<Envelope<RepositoryRecord[]>>("/v1/repositories/refresh", undefined, {
-      timeout: 60_000,
-    });
+    return api.post<Envelope<RepositoryRecord[]>>(
+      "/v1/repositories/refresh",
+      undefined,
+      {
+        timeout: 60_000,
+      },
+    );
   },
 
   overview(id: string) {
@@ -90,12 +105,23 @@ export const repositoriesApi = {
   },
 
   commits(id: string) {
-    return api.get<Envelope<RepositoryCommit[]>>(`/v1/repositories/${id}/commits`);
+    return api.get<Envelope<RepositoryCommit[]>>(
+      `/v1/repositories/${id}/commits`,
+    );
   },
 
   contents(id: string, path: string) {
-    return api.get<Envelope<RepositoryEntry[]>>(`/v1/repositories/${id}/contents`, {
-      params: { path },
+    return api.get<Envelope<RepositoryEntry[]>>(
+      `/v1/repositories/${id}/contents`,
+      {
+        params: { path },
+      },
+    );
+  },
+
+  tree(id: string, ref: string) {
+    return api.get<Envelope<RepositoryTree>>(`/v1/repositories/${id}/tree`, {
+      params: { ref: ref || undefined },
     });
   },
 

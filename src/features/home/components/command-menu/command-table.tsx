@@ -6,8 +6,16 @@ import Avatar from "@/components/_ui/avatar";
 import { CommandItem } from "@/components/_ui/command";
 import Tag from "@/components/_ui/tag";
 import SegmentBar from "@/components/_common/segment-bar";
-import { TAG_TONES, ownerByName, type Company } from "@/features/home/data/companies";
-import { formatDate, formatMoney, splitTags } from "@/features/home/lib/companies";
+import {
+  TAG_TONES,
+  ownerByName,
+  type Company,
+} from "@/features/home/data/companies";
+import {
+  formatDate,
+  formatMoney,
+  splitTags,
+} from "@/features/home/lib/companies";
 import { cn } from "@/lib/utils";
 import CalendarIcon from "@/public/assets/images/_common/calendar.svg?react";
 

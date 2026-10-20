@@ -30,7 +30,7 @@ export default function SidebarContent() {
       <div className="flex shrink-0 items-center gap-2.5 px-3.5 pt-4 pb-3">
         <Logo aria-hidden className="size-7 shrink-0 overflow-visible" />
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="lead-style block truncate font-medium tracking-[-0.01em] text-foreground">
+          <span className="lead-style text-foreground block truncate font-medium tracking-[-0.01em]">
             IssueNest
           </span>
           <span className="caption-style text-subtle block truncate">

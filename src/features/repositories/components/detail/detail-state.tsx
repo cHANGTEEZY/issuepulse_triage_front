@@ -32,7 +32,6 @@ export default function DetailState({
     return (
       <EmptyState
         illustration={<HairlineFigure figure={Plug} />}
-        className="max-w-[56em]"
         title={fallback}
         description={
           message === fallback

@@ -42,10 +42,7 @@ export default function SidebarNavItem({
         onClick={() => {
           if (href) setSidebarOpen(false);
         }}
-        className={cn(
-          "h-8 gap-2 px-2 py-0",
-          tone === "quiet" && "text-subtle",
-        )}
+        className={cn("h-8 gap-2 px-2 py-0", tone === "quiet" && "text-subtle")}
       >
         <Icon
           aria-hidden

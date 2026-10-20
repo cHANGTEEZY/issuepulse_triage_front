@@ -8,8 +8,16 @@ import Tag from "@/components/_ui/tag";
 import { TableCell, TableRow } from "@/components/_ui/table";
 import SegmentBar from "@/components/_common/segment-bar";
 import Sparkline from "@/features/home/components/sparkline";
-import { TAG_TONES, ownerByName, type Company } from "@/features/home/data/companies";
-import { formatDate, formatMoney, splitTags } from "@/features/home/lib/companies";
+import {
+  TAG_TONES,
+  ownerByName,
+  type Company,
+} from "@/features/home/data/companies";
+import {
+  formatDate,
+  formatMoney,
+  splitTags,
+} from "@/features/home/lib/companies";
 import { cn } from "@/lib/utils";
 import {
   TABLE_CELL_CLASS,

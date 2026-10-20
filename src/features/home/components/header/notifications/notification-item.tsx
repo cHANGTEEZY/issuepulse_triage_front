@@ -60,7 +60,7 @@ export default function NotificationItem({
         size="none"
         onClick={onSelect}
         data-unread={unread}
-        className="p-3 data-[unread=true]:bg-foreground/2 data-[unread=true]:hover:bg-foreground/5"
+        className="data-[unread=true]:bg-foreground/2 data-[unread=true]:hover:bg-foreground/5 p-3"
       >
         <span className="relative mt-px shrink-0">
           {actor ? (

@@ -103,9 +103,7 @@ export default function CommandMenu() {
             </CommandItem>
             <CommandItem
               value="repositories"
-              onSelect={() =>
-                go(() => void navigate({ to: "/repositories" }))
-              }
+              onSelect={() => go(() => void navigate({ to: "/repositories" }))}
             >
               Repositories
             </CommandItem>

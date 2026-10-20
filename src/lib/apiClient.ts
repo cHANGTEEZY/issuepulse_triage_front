@@ -82,8 +82,12 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const RETRYABLE_METHODS = new Set(["get", "head", "options"]);
+
 function isRetryable(error: AxiosError, attempt: number): boolean {
   if (attempt >= MAX_RETRIES) return false;
+  if (!RETRYABLE_METHODS.has((error.config?.method ?? "get").toLowerCase()))
+    return false;
   if (!error.response) return true;
   const { status } = error.response;
   return status === 429 || (status >= 500 && status !== 501);
@@ -156,10 +160,11 @@ httpClient.interceptors.response.use(
     if (!config) return Promise.reject(normalizeError(error));
 
     if (error.response?.status === 401) {
-      if (isBrowser()) {
+      const normalized = normalizeError(error);
+      if (isBrowser() && normalized.code !== "GITHUB_RECONNECT") {
         window.dispatchEvent(new CustomEvent("api:unauthorized"));
       }
-      return Promise.reject(normalizeError(error));
+      return Promise.reject(normalized);
     }
 
     const attempt = config._retryCount ?? 0;

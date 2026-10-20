@@ -1,8 +1,4 @@
-import {
-  ROLES,
-  SORT_OPTIONS,
-  STATUSES,
-} from "@/features/users/data/users";
+import { ROLES, SORT_OPTIONS, STATUSES } from "@/features/users/data/users";
 import { ALL_ROLES, ALL_STATUSES } from "@/features/users/lib/users";
 
 export const ROLE_OPTIONS = [

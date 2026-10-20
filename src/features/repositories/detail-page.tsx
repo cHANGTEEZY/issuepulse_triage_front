@@ -1,13 +1,11 @@
 import RepositoryDetail, {
-  type RepositoryTab,
+  type RepositorySearch,
 } from "@/features/repositories/components/detail/repository-detail";
 
 type RepositoryDetailPageProps = {
   repositoryId: string;
-  tab: RepositoryTab;
-  path: string;
-  onTabChange: (tab: RepositoryTab) => void;
-  onPathChange: (path: string) => void;
+  search: RepositorySearch;
+  onSearchChange: (search: RepositorySearch) => void;
 };
 
 export default function RepositoryDetailPage(props: RepositoryDetailPageProps) {

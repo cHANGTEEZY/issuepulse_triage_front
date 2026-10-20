@@ -123,7 +123,7 @@ export default function SidebarResizer() {
     >
       <span
         aria-hidden
-        className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-transparent transition-[background-color] duration-150 ease-power3-out group-hover:bg-line-strong group-focus-visible:bg-subtle group-active:bg-subtle"
+        className="ease-power3-out group-hover:bg-line-strong group-focus-visible:bg-subtle group-active:bg-subtle absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-transparent transition-[background-color] duration-150"
       />
     </div>
   );

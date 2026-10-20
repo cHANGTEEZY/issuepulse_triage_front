@@ -67,15 +67,7 @@ export function filterUsers(
 
 export function usersCsvRows(users: User[]) {
   return [
-    [
-      "Name",
-      "Email",
-      "Role",
-      "Status",
-      "Username",
-      "Phone",
-      "Join Date",
-    ],
+    ["Name", "Email", "Role", "Status", "Username", "Phone", "Join Date"],
     ...users.map((user) => [
       userFullName(user),
       user.email,

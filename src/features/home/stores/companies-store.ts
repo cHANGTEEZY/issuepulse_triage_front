@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { COMPANIES, type Company, type SortKey } from "@/features/home/data/companies";
+import {
+  COMPANIES,
+  type Company,
+  type SortKey,
+} from "@/features/home/data/companies";
 import { NOTIFICATIONS } from "@/features/home/data/notifications";
 import { DEFAULT_FILTERS } from "@/features/home/lib/companies";
 

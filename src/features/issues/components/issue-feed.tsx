@@ -68,7 +68,13 @@ export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
   }
 
   function clearFilters() {
-    patch({ q: "", repositoryId: "", status: "all", priority: "any", stale: false });
+    patch({
+      q: "",
+      repositoryId: "",
+      status: "all",
+      priority: "any",
+      stale: false,
+    });
   }
 
   const emptyState = !connected ? (
@@ -85,7 +91,11 @@ export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
   ) : hasFilters ? (
     <EmptyState
       illustration={<HairlineFigure figure={Loupe} />}
-      title={search.q ? `No results for “${search.q}”` : "No issues match these filters"}
+      title={
+        search.q
+          ? `No results for “${search.q}”`
+          : "No issues match these filters"
+      }
       description="Loosen a filter or clear them all to see everything across your repositories."
       action={
         <Button variant="secondary" size="md" onClick={clearFilters}>
@@ -209,7 +219,9 @@ export default function IssueFeed({ search, onSearchChange }: IssueFeedProps) {
         <p className="text-subtle px-4 py-6">Loading issues…</p>
       )}
       {issues.isError && (
-        <p className="text-destructive px-4 py-6">{errorMessage(issues.error)}</p>
+        <p className="text-destructive px-4 py-6">
+          {errorMessage(issues.error)}
+        </p>
       )}
       {issues.isSuccess && search.view === "table" && (
         <IssueTable rows={rows} empty={emptyState} />
@@ -258,7 +270,7 @@ function BoardColumn({
           key={issue.id}
           to="/issues/$issueId"
           params={{ issueId: issue.id }}
-          className="bg-background hover:bg-muted flex flex-col gap-2 rounded-lg p-3 transition-colors duration-150 ease-power3-out"
+          className="bg-background hover:bg-muted ease-power3-out flex flex-col gap-2 rounded-lg p-3 transition-colors duration-150"
         >
           <span className="font-medium">
             #{issue.number} {issue.title}

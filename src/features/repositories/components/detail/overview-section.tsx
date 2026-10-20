@@ -11,9 +11,13 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function OverviewSection({ repository }: { repository: RepositoryOverview }) {
+export default function OverviewSection({
+  repository,
+}: {
+  repository: RepositoryOverview;
+}) {
   return (
-    <div className="flex max-w-[48em] flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           <Tag tone={repository.private ? "amber" : "green"} size="sm">

@@ -44,7 +44,11 @@ export function priorityTone(priority: TriagePriority) {
 
 const STALE_MS = 14 * 24 * 60 * 60 * 1000;
 
-export function isStaleIssue(updatedAt: string, state: string, status: TriageStatus) {
+export function isStaleIssue(
+  updatedAt: string,
+  state: string,
+  status: TriageStatus,
+) {
   return (
     state === "open" &&
     status !== "done" &&

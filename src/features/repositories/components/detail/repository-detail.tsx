@@ -1,54 +1,85 @@
 import PageHeader from "@/components/_common/page-header";
 import Button from "@/components/_ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/_ui/tabs";
+import { useWorkflowRuns } from "@/api/hooks/use-github";
 import {
   useRepositoryCommits,
-  useRepositoryContents,
   useRepositoryOverview,
   useRepositoryPulls,
   useSyncRepository,
 } from "@/api/hooks/use-repositories";
 import { formatWhen } from "@/features/issues/lib/triage";
+import ActionsSection from "./actions-section";
 import CommitsSection from "./commits-section";
+import ComposePullDialog from "./compose-pull-dialog";
 import DetailState, { readError } from "./detail-state";
 import FilesSection from "./files-section";
 import OverviewSection from "./overview-section";
+import PullDetail from "./pull-detail";
 import PullsSection from "./pulls-section";
 
-export type RepositoryTab = "overview" | "commits" | "files" | "pulls";
+export const REPOSITORY_TABS = [
+  "overview",
+  "commits",
+  "files",
+  "pulls",
+  "actions",
+] as const;
 
-const TABS: Array<{ value: RepositoryTab; label: string }> = [
-  { value: "overview", label: "Overview" },
-  { value: "commits", label: "Commits" },
-  { value: "files", label: "Files" },
-  { value: "pulls", label: "Pull requests" },
-];
+export type RepositoryTab = (typeof REPOSITORY_TABS)[number];
+
+export type RepositorySearch = {
+  tab?: RepositoryTab;
+  path?: string;
+  file?: string;
+  ref?: string;
+  newFile?: boolean;
+  pull?: number;
+  compose?: string;
+};
+
+const TAB_LABEL: Record<RepositoryTab, string> = {
+  overview: "Overview",
+  commits: "Commits",
+  files: "Files",
+  pulls: "Pull requests",
+  actions: "Actions",
+};
 
 type RepositoryDetailProps = {
   repositoryId: string;
-  tab: RepositoryTab;
-  path: string;
-  onTabChange: (tab: RepositoryTab) => void;
-  onPathChange: (path: string) => void;
+  search: RepositorySearch;
+  onSearchChange: (search: RepositorySearch) => void;
 };
 
 export default function RepositoryDetail({
   repositoryId,
-  tab,
-  path,
-  onTabChange,
-  onPathChange,
+  search,
+  onSearchChange,
 }: RepositoryDetailProps) {
+  const tab = search.tab ?? "overview";
+  const path = search.path ?? "";
   const overview = useRepositoryOverview(repositoryId);
   const commits = useRepositoryCommits(repositoryId);
-  const contents = useRepositoryContents(repositoryId, path);
   const pulls = useRepositoryPulls(repositoryId);
+  const runs = useWorkflowRuns(repositoryId, tab === "actions");
   const sync = useSyncRepository();
+
+  const defaultBranch = overview.data?.defaultBranch ?? "main";
+  const composing = search.compose !== undefined;
+  const [composeHead, composeBase] =
+    search.compose && search.compose !== "new"
+      ? search.compose.split("...")
+      : [];
 
   const title = overview.data ? overview.data.fullName : "Repository";
   const description = overview.data
     ? `${overview.data.defaultBranch} · last sync ${formatWhen(overview.data.lastSyncedAt)}`
-    : "Overview, commits, files, and pull requests.";
+    : "Overview, commits, files, pull requests, and workflow runs.";
+
+  function go(next: RepositorySearch) {
+    onSearchChange(next);
+  }
 
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -86,11 +117,14 @@ export default function RepositoryDetail({
           </div>
         }
       >
-        <Tabs value={tab} onValueChange={(value) => onTabChange(value as RepositoryTab)}>
+        <Tabs
+          value={tab}
+          onValueChange={(value) => go({ tab: value as RepositoryTab })}
+        >
           <TabsList className="border-border overflow-x-auto border-b px-4">
-            {TABS.map((item) => (
-              <TabsTrigger key={item.value} value={item.value}>
-                {item.label}
+            {REPOSITORY_TABS.map((item) => (
+              <TabsTrigger key={item} value={item}>
+                {TAB_LABEL[item]}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -99,7 +133,9 @@ export default function RepositoryDetail({
 
       <div className="min-h-0 flex-1 overflow-auto px-4 py-5">
         {sync.isError && (
-          <p className="text-destructive pb-3">{readError(sync.error, "Sync failed.")}</p>
+          <p className="text-destructive pb-3">
+            {readError(sync.error, "Sync failed.")}
+          </p>
         )}
 
         {tab === "overview" && (
@@ -122,23 +158,67 @@ export default function RepositoryDetail({
             fallback="Could not load commits."
             pendingLabel="Loading commits…"
           >
-            <CommitsSection commits={commits.data ?? []} />
+            <CommitsSection
+              repositoryId={repositoryId}
+              commits={commits.data ?? []}
+            />
           </DetailState>
         )}
 
         {tab === "files" && (
-          <DetailState
-            isPending={contents.isPending}
-            isError={contents.isError}
-            error={contents.error}
-            fallback="Could not load files."
-            pendingLabel="Loading files…"
-          >
-            <FilesSection entries={contents.data ?? []} path={path} onNavigate={onPathChange} />
-          </DetailState>
+          <FilesSection
+            repositoryId={repositoryId}
+            defaultBranch={defaultBranch}
+            folder={path}
+            file={search.file}
+            branch={search.ref}
+            isNew={search.newFile === true}
+            htmlUrl={overview.data?.htmlUrl}
+            onOpenFile={(filePath) =>
+              go({
+                tab: "files",
+                path: filePath.split("/").slice(0, -1).join("/") || undefined,
+                file: filePath,
+                ref: search.ref,
+              })
+            }
+            onNewFile={(next) =>
+              go({
+                tab: "files",
+                path: next || undefined,
+                newFile: true,
+                ref: search.ref,
+              })
+            }
+            onClose={() =>
+              go({ tab: "files", path: path || undefined, ref: search.ref })
+            }
+            onRefChange={(ref) =>
+              go({ ...search, ref: ref === defaultBranch ? undefined : ref })
+            }
+            onOpened={(filePath, ref) =>
+              go({
+                tab: "files",
+                path: filePath.split("/").slice(0, -1).join("/") || undefined,
+                file: filePath,
+                ref: ref === defaultBranch ? undefined : ref,
+              })
+            }
+            onComposePull={(head, base) =>
+              go({ tab: "pulls", compose: `${head}...${base}` })
+            }
+          />
         )}
 
-        {tab === "pulls" && (
+        {tab === "pulls" && search.pull !== undefined && (
+          <PullDetail
+            repositoryId={repositoryId}
+            number={search.pull}
+            onBack={() => go({ tab: "pulls" })}
+          />
+        )}
+
+        {tab === "pulls" && search.pull === undefined && (
           <DetailState
             isPending={pulls.isPending}
             isError={pulls.isError}
@@ -146,10 +226,41 @@ export default function RepositoryDetail({
             fallback="Could not load pull requests."
             pendingLabel="Loading pull requests…"
           >
-            <PullsSection pulls={pulls.data ?? []} />
+            <PullsSection
+              pulls={pulls.data ?? []}
+              onOpen={(number) => go({ tab: "pulls", pull: number })}
+              onCompose={() => go({ tab: "pulls", compose: "new" })}
+            />
+          </DetailState>
+        )}
+
+        {tab === "actions" && (
+          <DetailState
+            isPending={runs.isPending}
+            isError={runs.isError}
+            error={runs.error}
+            fallback="Could not load workflow runs."
+            pendingLabel="Loading workflow runs…"
+          >
+            <ActionsSection
+              repositoryId={repositoryId}
+              runs={runs.data ?? []}
+            />
           </DetailState>
         )}
       </div>
+
+      <ComposePullDialog
+        repositoryId={repositoryId}
+        defaultBranch={defaultBranch}
+        open={tab === "pulls" && composing}
+        head={composeHead || undefined}
+        base={composeBase || undefined}
+        onOpenChange={(open) => {
+          if (!open) go({ tab: "pulls", pull: search.pull });
+        }}
+        onCreated={(number) => go({ tab: "pulls", pull: number })}
+      />
     </section>
   );
 }

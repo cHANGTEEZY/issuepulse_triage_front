@@ -1,27 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
 import RepositoryDetailPage from "@/features/repositories/detail-page";
+import {
+  REPOSITORY_TABS,
+  type RepositorySearch,
+} from "@/features/repositories/components/detail/repository-detail";
 import { canonicalLink, headMeta } from "@/lib/seo";
 
-type RepositorySearch = {
-  tab?: "overview" | "commits" | "files" | "pulls";
-  path?: string;
-};
+function text(value: unknown) {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
 
 export const Route = createFileRoute("/_app/repositories/$repositoryId")({
   component: RepositoryRoute,
-  validateSearch: (search: Record<string, unknown>): RepositorySearch => ({
-    tab:
-      search.tab === "commits" ||
-      search.tab === "files" ||
-      search.tab === "pulls"
-        ? search.tab
-        : undefined,
-    path: typeof search.path === "string" && search.path.length > 0 ? search.path : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): RepositorySearch => {
+    const pull = Number(search.pull);
+    return {
+      tab:
+        search.tab !== "overview" &&
+        (REPOSITORY_TABS as readonly unknown[]).includes(search.tab)
+          ? (search.tab as RepositorySearch["tab"])
+          : undefined,
+      path: text(search.path),
+      file: text(search.file),
+      ref: text(search.ref),
+      newFile:
+        search.newFile === true || search.newFile === "true" ? true : undefined,
+      pull: Number.isInteger(pull) && pull > 0 ? pull : undefined,
+      compose: text(search.compose),
+    };
+  },
   head: ({ params }) => ({
     meta: headMeta({
       title: "Repository",
-      description: "Overview, commits, files, and pull requests.",
+      description:
+        "Overview, commits, files, pull requests, and workflow runs.",
       path: `/repositories/${params.repositoryId}`,
     }),
     links: canonicalLink(`/repositories/${params.repositoryId}`),
@@ -36,19 +48,13 @@ function RepositoryRoute() {
   return (
     <RepositoryDetailPage
       repositoryId={repositoryId}
-      tab={search.tab ?? "overview"}
-      path={search.path ?? ""}
-      onTabChange={(tab) =>
+      search={search}
+      onSearchChange={(next) =>
         void navigate({
-          search: (previous) => ({
-            ...previous,
-            tab: tab === "overview" ? undefined : tab,
+          search: () => ({
+            ...next,
+            tab: next.tab === "overview" ? undefined : next.tab,
           }),
-        })
-      }
-      onPathChange={(path) =>
-        void navigate({
-          search: (previous) => ({ ...previous, tab: "files", path: path || undefined }),
         })
       }
     />
