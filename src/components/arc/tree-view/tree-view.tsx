@@ -2,7 +2,8 @@
 
 import { useId, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
-import { ChevronRight, File, Folder, FolderOpen } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { FileIcon, FolderIcon } from "@react-symbols/icons/utils";
 import {
   AnimatePresence,
   motion,
@@ -47,8 +48,6 @@ const fadeOut = {
   duration: motionTokens.duration.instant,
   ease: [...motionTokens.ease.standard],
 } as const;
-const blur = (px: number) => `blur(${px}px)`;
-
 function flatten(
   nodes: TreeNode[],
   expanded: ReadonlySet<string>,
@@ -61,55 +60,6 @@ function flatten(
       ? flatten(node.children, expanded, depth + 1, node.id)
       : []),
   ]);
-}
-
-function fileTone(label: string, classNames: Record<string, string>) {
-  const name = label.toLowerCase();
-  if (name.endsWith(".tsx") || name.endsWith(".ts"))
-    return classNames.typescript;
-  if (name.endsWith(".css")) return classNames.stylesheet;
-  if (name.endsWith(".md")) return classNames.markdown;
-  if (name.endsWith(".json")) return classNames.json;
-  return classNames.file;
-}
-
-/** Same markup with or without reduced motion, so the server render always hydrates cleanly; only the transition changes. */
-function FolderIcon({ open, reduced }: { open: boolean; reduced: boolean }) {
-  return (
-    <AnimatePresence initial={false} mode="popLayout">
-      <motion.span
-        key={open ? "open" : "closed"}
-        className={styles.folderGlyph}
-        initial={
-          reduced
-            ? false
-            : { opacity: 0, scale: 0.6, filter: blur(motionTokens.blur.subtle) }
-        }
-        animate={{ opacity: 1, scale: 1, filter: blur(0) }}
-        exit={
-          reduced
-            ? { opacity: 0, transition: still }
-            : {
-                opacity: 0,
-                scale: 0.6,
-                filter: blur(motionTokens.blur.subtle),
-                transition: fadeOut,
-              }
-        }
-        transition={
-          reduced
-            ? still
-            : { ...motionTokens.spring.snappy, opacity: fadeIn, filter: fadeIn }
-        }
-      >
-        {open ? (
-          <FolderOpen size={16} strokeWidth={1.7} />
-        ) : (
-          <Folder size={16} strokeWidth={1.7} />
-        )}
-      </motion.span>
-    </AnimatePresence>
-  );
 }
 
 /**
@@ -352,20 +302,21 @@ export function TreeView({
                     <ChevronRight size={14} strokeWidth={1.9} />
                   ) : null}
                 </motion.span>
-                <span
-                  className={[
-                    styles.icon,
-                    hasChildren
-                      ? styles.folder
-                      : fileTone(item.node.label, styles),
-                  ].join(" ")}
-                  aria-hidden="true"
-                >
+                <span className={styles.icon} aria-hidden="true">
                   {item.node.icon ??
                     (hasChildren ? (
-                      <FolderIcon open={isExpanded} reduced={reduced} />
+                      <FolderIcon
+                        folderName={item.node.label}
+                        width={16}
+                        height={16}
+                      />
                     ) : (
-                      <File size={16} strokeWidth={1.7} />
+                      <FileIcon
+                        fileName={item.node.label}
+                        autoAssign
+                        width={16}
+                        height={16}
+                      />
                     ))}
                 </span>
                 <span className={styles.label}>{item.node.label}</span>

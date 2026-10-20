@@ -3,10 +3,10 @@
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding: 6px 8px 8px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--surface);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--foreground);
   overflow: hidden;
 }
@@ -39,8 +39,8 @@
   cursor: pointer;
   outline: none;
   transition:
-    color var(--duration-fast) var(--ease-standard),
-    background-color var(--duration-fast) var(--ease-standard);
+    color 420ms var(--ease-standard),
+    background-color 420ms var(--ease-standard);
 }
 /* Selection changes color only; a heavier weight would reflow the label. */
 .item[aria-selected="true"] {
@@ -84,8 +84,12 @@
   height: 16px;
   flex: 0 0 16px;
   place-items: center;
-  color: var(--text-muted);
-  transition: color var(--duration-fast) var(--ease-standard);
+  color: unset;
+}
+.icon svg {
+  display: block;
+  width: 16px;
+  height: 16px;
 }
 .folder {
   color: var(--text-secondary);

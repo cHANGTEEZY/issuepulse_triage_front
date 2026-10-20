@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-import { Folder } from "lucide-react";
+import { useState } from "react";
 import { Drawer } from "@lucasmarkes/hairline/react";
 import HairlineFigure from "@/components/_common/hairline-figure";
 import { useRepositoryTree } from "@/api/hooks/use-repositories";
@@ -31,18 +30,6 @@ type FilesSectionProps = {
   onComposePull: (head: string, base: string) => void;
 };
 
-function withIcons(nodes: FileTreeNode[]): FileTreeNode[] {
-  return nodes.map((node) => {
-    const children = node.children ? withIcons(node.children) : undefined;
-    const emptyFolder = node.kind === "dir" && !children?.length;
-    return {
-      ...node,
-      children,
-      icon: emptyFolder ? <Folder /> : undefined,
-    };
-  });
-}
-
 export default function FilesSection({
   repositoryId,
   defaultBranch,
@@ -63,10 +50,7 @@ export default function FilesSection({
   const [pickedFolder, setPickedFolder] = useState<string | null>(null);
   const viewing = Boolean(file) || isNew;
   const createIn = pickedFolder ?? folder;
-  const nodes = useMemo(
-    () => withIcons(fileTree(tree.data?.entries ?? [])),
-    [tree.data?.entries],
-  );
+  const nodes = fileTree(tree.data?.entries ?? []);
   const expanded = expandedFolderIds(file, folder);
 
   function select(node: TreeNode) {
@@ -97,15 +81,17 @@ export default function FilesSection({
           viewing && "max-lg:hidden",
         )}
       >
-        <div className="flex justify-end">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onNewFile(createIn)}
-          >
-            New file
-          </Button>
-        </div>
+        {!viewing && (
+          <div className="flex lg:hidden">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onNewFile(createIn)}
+            >
+              New file
+            </Button>
+          </div>
+        )}
         <DetailState
           isPending={tree.isPending}
           isError={tree.isError}
@@ -154,9 +140,19 @@ export default function FilesSection({
             onClose={onClose}
             onOpened={onOpened}
             onComposePull={onComposePull}
+            onNewFile={() => onNewFile(createIn)}
           />
         ) : (
-          <p className="text-subtle py-6">Select a file to read or edit it.</p>
+          <div className="flex flex-col items-start gap-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onNewFile(createIn)}
+            >
+              New file
+            </Button>
+            <p className="text-subtle">Select a file to read or edit it.</p>
+          </div>
         )}
       </div>
     </div>

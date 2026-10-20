@@ -14,11 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/_ui/select";
-import { Textarea } from "@/components/_ui/textarea";
 import Field from "@/components/_ui/field";
 import SegmentedControl from "@/components/arc/segmented-control/segmented-control";
 import GithubError from "@/features/github/components/github-error";
 import MarkdownBody from "@/features/issues/components/markdown-body";
+import SourceView from "./source-view";
 import { useUiStore } from "@/features/app/stores/ui-store";
 
 type FileViewProps = {
@@ -32,6 +32,7 @@ type FileViewProps = {
   onClose: () => void;
   onOpened: (path: string, ref: string) => void;
   onComposePull: (head: string, base: string) => void;
+  onNewFile: () => void;
 };
 
 function slug(value: string) {
@@ -53,6 +54,7 @@ export default function FileView({
   onClose,
   onOpened,
   onComposePull,
+  onNewFile,
 }: FileViewProps) {
   const branch = selected ?? defaultBranch;
   const branches = useRepositoryBranches(repositoryId);
@@ -185,6 +187,9 @@ export default function FileView({
               Edit
             </Button>
           )}
+          <Button variant="secondary" size="sm" onClick={onNewFile}>
+            New file
+          </Button>
         </div>
       </div>
 
@@ -206,23 +211,17 @@ export default function FileView({
       {editable && (isNew || file.data) && (
         <div className="border-line-strong overflow-hidden rounded-xl border">
           {editing ? (
-            <Textarea
-              value={content}
-              onChange={(event) => setDraft(event.target.value)}
-              spellCheck={false}
-              aria-label={`Contents of ${name}`}
-              className="min-h-[28em] rounded-none border-0 bg-transparent font-mono text-[13px] leading-[1.55] whitespace-pre"
+            <SourceView
+              code={content}
+              filename={filePath || name}
+              onChange={setDraft}
             />
           ) : isMarkdown ? (
             <div className="px-6 py-5">
               <MarkdownBody source={content} empty="This file is empty." />
             </div>
           ) : (
-            <pre className="max-h-[70vh] overflow-auto px-4 py-3 font-mono text-[13px] leading-[1.55]">
-              {content || (
-                <span className="text-subtle">This file is empty.</span>
-              )}
-            </pre>
+            <SourceView code={content} filename={name} readOnly />
           )}
         </div>
       )}
